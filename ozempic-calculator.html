@@ -324,6 +324,12 @@
             const monthly = parseFloat(document.getElementById('monthlyCost').value) || 0;
             const annual = monthly * 12;
 
+            // Mobile Menu Logic
+            document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+                document.querySelector('.nav-links').classList.toggle('active');
+            });
+
+            // Initialize
             // Inflation Calculation (Compound 6% over 5 years)
             let fiveYearTotal = 0;
             let currentAnnual = annual;
