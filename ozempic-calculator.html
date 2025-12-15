@@ -232,6 +232,7 @@
                 <div class="calc-card">
                     <h3 style="margin-bottom: 24px;">5-Year Financial Impact</h3>
 
+
                     <div id="resultContainer" class="result-container">
                         <div class="result-box" id="annualBox">
                             <div class="result-label">Base Annual Cost</div>
@@ -242,6 +243,31 @@
                             <div class="result-label">5-Year Projected Cost</div>
                             <div class="result-value text-danger" id="fiveYearCost">$---</div>
                             <div class="result-sub" id="inflationText">With 6% avg. annual inflation</div>
+                        </div>
+
+                        <!-- Comparison Table -->
+                        <div id="compareTable" style="margin-bottom: 24px; display:none;">
+                            <h4 style="color:white; margin-bottom:12px; font-size: 1rem;">Cost Comparison (Monthly)</h4>
+                            <div style="background: rgba(255,255,255,0.05); border-radius: 8px; overflow:hidden;">
+                                <div
+                                    style="display:grid; grid-template-columns: 2fr 1fr; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                    <div style="color:var(--text-secondary); font-size:0.9rem;">Brand Name (Retail)
+                                    </div>
+                                    <div style="color:white; text-align:right; font-weight:600;" id="compBrand">$935
+                                    </div>
+                                </div>
+                                <div
+                                    style="display:grid; grid-template-columns: 2fr 1fr; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                    <div style="color:var(--text-secondary); font-size:0.9rem;">Compounded (Online)
+                                    </div>
+                                    <div style="color:#22c55e; text-align:right; font-weight:600;">~$297</div>
+                                </div>
+                                <div style="display:grid; grid-template-columns: 2fr 1fr; padding: 12px;">
+                                    <div style="color:var(--text-secondary); font-size:0.9rem;">Natural Alternative
+                                    </div>
+                                    <div style="color:#22c55e; text-align:right; font-weight:600;">~$59</div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="calc-cta-section" id="dynamicCta">
@@ -348,20 +374,26 @@
             document.getElementById('annualCost').innerText = formatMoney(annual);
             document.getElementById('fiveYearCost').innerText = formatMoney(fiveYearTotal);
 
+            // Update Comparison Table
+            document.getElementById('compareTable').style.display = 'block';
+            document.getElementById('compBrand').innerText = formatMoney(monthly);
+
             // "Big Kahuna" Logic
             const ctaContainer = document.getElementById('dynamicCta');
             const status = document.getElementById('insuranceStatus').value;
 
-            // Scenario A: High Cost / No Insurance -> Push Insurance Checker (CPA)
+            // Scenario A: High Cost / No Insurance -> Push Natural Alternative
             if (status === 'none' || status === 'deductible' || monthly > 300) {
                 ctaContainer.innerHTML = `
                     <p style="margin-bottom: 16px; color: #f87171; font-weight: 600;">⚠️ Heads up: Over 5 years, costs can add up fast—especially without coverage.</p>
                     
-                    <a href="#" class="btn btn-primary btn-block" style="margin-bottom: 12px; background: #ef4444;">Check Insurance Eligibility &rarr;</a>
-                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 20px;">(Opens external partner site)</div>
+                    <p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 0.95rem;">Thousands are switching to science-backed natural alternatives that cost a fraction of the price—without the needles or side effects.</p>
 
-                    <a href="https://7234ch3ijklm2tda73liqh6yf0.hop.clickbank.net" class="btn btn-block" style="background: rgba(255,255,255,0.1);">Or Try The Natural Alternative</a>
-                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">(Commission-earned link)</div>
+                    <a href="https://7234ch3ijklm2tda73liqh6yf0.hop.clickbank.net" class="btn btn-primary btn-block" style="margin-bottom: 12px; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">Discover The Natural Alternative →</a>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 20px;">21-Day Flat Belly Flush System • 60-Day Money-Back Guarantee</div>
+
+                    <a href="articles/ozempic-truth.html" class="btn btn-block" style="background: rgba(255,255,255,0.1);">Learn More: Why Users Are Switching</a>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">(Affiliate link - we may earn a commission)</div>
                 `;
             }
             // Scenario B: Low Cost / Covered -> Push Standard Affiliate
