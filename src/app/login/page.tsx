@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -13,6 +13,13 @@ function LoginForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const redirect = searchParams.get('redirect') || '/';
+    const urlError = searchParams.get('error');
+
+    useEffect(() => {
+        if (urlError === 'auth_error') {
+            setError('Authentication failed. Please try again or use email/password.');
+        }
+    }, [urlError]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
