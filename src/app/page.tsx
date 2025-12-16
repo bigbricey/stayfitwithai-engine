@@ -1,162 +1,143 @@
 import Link from 'next/link';
-import goals from '@/data/goals.json';
 import TimelineCalculator from '@/components/TimelineCalculator';
 
 export default function Home() {
-  const featuredGoals = goals.slice(0, 12);
-
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-200">
-      {/* Hero Section */}
-      <div className="relative border-b border-slate-800/50 pt-16 pb-32 px-4 overflow-hidden">
-        {/* Gradient orbs for visual interest */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
-
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 py-2 px-4 rounded-full bg-orange-500/10 border border-orange-500/20 mb-8">
-            <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
-            <span className="text-orange-400 text-sm font-medium">Free Science-Based Tools</span>
-          </div>
-          <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight mb-6">
-            Weight Loss<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500">Timeline Forecaster</span>
+    <div className="bg-gray-100">
+      {/* Hero Section - Light Blue */}
+      <div className="bg-gradient-to-b from-[#E8F4FC] to-gray-100 py-16 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+            Free Online Calorie Counter
           </h1>
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Stop guessing. Get a science-based prediction of exactly when you'll reach your goal weight—and discover how to get there faster.
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+            Track your food, exercise, and weight loss goals. Join millions who have
+            achieved their fitness goals with our science-based tools.
           </p>
+          <div className="flex justify-center gap-4">
+            <Link
+              href="/signup"
+              className="bg-[#0073CF] text-white px-8 py-3 rounded font-semibold hover:bg-[#005AA7] transition-colors shadow-lg"
+            >
+              Start for Free
+            </Link>
+            <Link
+              href="/login"
+              className="bg-white text-[#0073CF] px-8 py-3 rounded font-semibold hover:bg-gray-50 transition-colors border border-gray-200"
+            >
+              Log In
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Calculator Section */}
-      <div className="max-w-4xl mx-auto px-4 -mt-20 relative z-20 mb-24">
-        <TimelineCalculator />
+      {/* Calorie Calculator Section */}
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <h2 className="text-2xl font-bold text-gray-800 text-center mb-2">Weight Loss Timeline Forecaster</h2>
+          <p className="text-gray-500 text-center mb-8">Science-based predictions using the Mifflin-St Jeor equation</p>
+          <TimelineCalculator />
+        </div>
       </div>
 
-      {/* How It Works */}
-      <div className="max-w-6xl mx-auto px-4 py-20">
-        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">How It Works</h2>
-        <p className="text-slate-400 text-center mb-16 max-w-2xl mx-auto">Our calculator uses the same equations used by doctors and nutritionists</p>
+      {/* Features Grid */}
+      <div className="max-w-6xl mx-auto px-4 py-16">
+        <h2 className="text-3xl font-bold text-gray-800 text-center mb-4">Why Choose StayFitWithAI?</h2>
+        <p className="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
+          Everything you need to reach your fitness goals, completely free.
+        </p>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-amber-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative bg-slate-900/50 border border-slate-800 rounded-2xl p-8 hover:border-orange-500/50 transition-colors">
-              <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-orange-500/25">
-                <span className="text-2xl">📊</span>
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Enter Your Details</h3>
-              <p className="text-slate-400 leading-relaxed">Input your current weight, goal, age, and activity level using our intuitive sliders.</p>
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-[#0073CF] rounded-lg flex items-center justify-center mb-4">
+              <span className="text-2xl">📊</span>
             </div>
+            <h3 className="text-lg font-bold text-gray-800 mb-2">Track Calories</h3>
+            <p className="text-gray-600">Log your meals and track calories with our database of 380,000+ foods.</p>
           </div>
 
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-amber-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative bg-slate-900/50 border border-slate-800 rounded-2xl p-8 hover:border-orange-500/50 transition-colors">
-              <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-orange-500/25">
-                <span className="text-2xl">🧬</span>
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">We Analyze Your Metabolism</h3>
-              <p className="text-slate-400 leading-relaxed">Using the Mifflin-St Jeor equation—the gold standard in metabolic science.</p>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-[#0073CF] rounded-lg flex items-center justify-center mb-4">
+              <span className="text-2xl">🏃</span>
             </div>
+            <h3 className="text-lg font-bold text-gray-800 mb-2">Log Exercise</h3>
+            <p className="text-gray-600">Track your workouts and see how many calories you burn each day.</p>
           </div>
 
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-amber-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative bg-slate-900/50 border border-slate-800 rounded-2xl p-8 hover:border-orange-500/50 transition-colors">
-              <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-orange-500/25">
-                <span className="text-2xl">📈</span>
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">See Your Timeline</h3>
-              <p className="text-slate-400 leading-relaxed">Get an interactive projection showing two paths: standard vs. accelerated.</p>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-[#0073CF] rounded-lg flex items-center justify-center mb-4">
+              <span className="text-2xl">📈</span>
             </div>
+            <h3 className="text-lg font-bold text-gray-800 mb-2">See Progress</h3>
+            <p className="text-gray-600">Watch your weight trend over time with beautiful charts and insights.</p>
           </div>
         </div>
       </div>
 
       {/* Stats Bar */}
-      <div className="border-y border-slate-800/50 bg-slate-900/30 py-12">
+      <div className="bg-[#0073CF] py-12">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
             <div>
-              <div className="text-4xl font-bold text-orange-400 mb-1">100+</div>
-              <div className="text-slate-400 text-sm">Goal Templates</div>
+              <div className="text-4xl font-bold mb-1">380K+</div>
+              <div className="text-blue-100 text-sm">Foods in Database</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-orange-400 mb-1">5+</div>
-              <div className="text-slate-400 text-sm">Free Calculators</div>
+              <div className="text-4xl font-bold mb-1">100%</div>
+              <div className="text-blue-100 text-sm">Free Forever</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-orange-400 mb-1">1990</div>
-              <div className="text-slate-400 text-sm">Science-Backed Since</div>
+              <div className="text-4xl font-bold mb-1">5+</div>
+              <div className="text-blue-100 text-sm">Free Tools</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-orange-400 mb-1">Free</div>
-              <div className="text-slate-400 text-sm">Forever</div>
+              <div className="text-4xl font-bold mb-1">Science</div>
+              <div className="text-blue-100 text-sm">Based Methods</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Popular Goals */}
-      <div className="max-w-6xl mx-auto px-4 py-20">
-        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">Popular Weight Loss Goals</h2>
-        <p className="text-slate-400 text-center mb-12">Find your specific goal and get a personalized timeline</p>
+      {/* Popular Tools */}
+      <div className="max-w-6xl mx-auto px-4 py-16">
+        <h2 className="text-3xl font-bold text-gray-800 text-center mb-12">Free Fitness Tools</h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {featuredGoals.map((goal) => (
-            <Link
-              key={goal.slug}
-              href={`/plan/${goal.slug}`}
-              className="group relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/0 to-orange-500/0 group-hover:from-orange-500/10 group-hover:to-amber-500/10 transition-all rounded-xl" />
-              <div className="relative p-4 bg-slate-900/50 border border-slate-800 rounded-xl group-hover:border-orange-500/50 transition-all">
-                <span className="text-slate-200 group-hover:text-orange-400 transition-colors text-sm font-medium">{goal.label}</span>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-xs text-slate-500">{goal.pounds} lbs</span>
-                  <svg className="w-4 h-4 text-slate-600 group-hover:text-orange-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link href="/tools/bmi-calculator" className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-[#0073CF] transition-all group">
+            <h3 className="font-bold text-gray-800 group-hover:text-[#0073CF] transition-colors">BMI Calculator</h3>
+            <p className="text-gray-500 text-sm mt-1">Check your body mass index</p>
+          </Link>
 
-        <div className="text-center mt-10">
-          <Link
-            href="/goals"
-            className="inline-flex items-center gap-2 text-orange-400 hover:text-orange-300 font-medium group"
-          >
-            View all 100+ weight loss plans
-            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
+          <Link href="/tools/calorie-calculator" className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-[#0073CF] transition-all group">
+            <h3 className="font-bold text-gray-800 group-hover:text-[#0073CF] transition-colors">Calorie Calculator</h3>
+            <p className="text-gray-500 text-sm mt-1">Find your daily calorie needs</p>
+          </Link>
+
+          <Link href="/goals" className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-[#0073CF] transition-all group">
+            <h3 className="font-bold text-gray-800 group-hover:text-[#0073CF] transition-colors">Weight Loss Goals</h3>
+            <p className="text-gray-500 text-sm mt-1">100+ goal templates</p>
+          </Link>
+
+          <Link href="/dashboard" className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-[#0073CF] transition-all group">
+            <h3 className="font-bold text-gray-800 group-hover:text-[#0073CF] transition-colors">Food Diary</h3>
+            <p className="text-gray-500 text-sm mt-1">Track your daily intake</p>
           </Link>
         </div>
       </div>
 
-      {/* Science Section */}
-      <div className="border-t border-slate-800/50 bg-slate-900/30">
-        <div className="max-w-4xl mx-auto px-4 py-20">
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-8">The Science Behind It</h2>
-          <div className="bg-slate-950/50 rounded-2xl p-8 border border-slate-800">
-            <p className="text-slate-300 leading-relaxed mb-6">
-              Our Weight Loss Timeline Forecaster uses the <strong className="text-orange-400">Mifflin-St Jeor Equation</strong>,
-              which clinical studies have shown to be the most accurate predictor of Resting Metabolic Rate (RMR).
-            </p>
-            <p className="text-slate-400 leading-relaxed mb-6">
-              This equation was developed in 1990 and has been validated repeatedly as superior to older formulas like Harris-Benedict.
-              It's the same calculator used by nutritionists, doctors, and fitness professionals worldwide.
-            </p>
-            <div className="bg-slate-900/50 rounded-xl p-4 font-mono text-sm text-slate-400">
-              <p>BMR (Men) = 10×weight(kg) + 6.25×height(cm) - 5×age + 5</p>
-              <p>BMR (Women) = 10×weight(kg) + 6.25×height(cm) - 5×age - 161</p>
-            </div>
-          </div>
+      {/* CTA Section */}
+      <div className="bg-gradient-to-r from-[#0073CF] to-[#005AA7] py-16 px-4">
+        <div className="max-w-4xl mx-auto text-center text-white">
+          <h2 className="text-3xl font-bold mb-4">Ready to Start Your Journey?</h2>
+          <p className="text-blue-100 mb-8 text-lg">Join for free and start tracking your nutrition today.</p>
+          <Link
+            href="/signup"
+            className="inline-block bg-white text-[#0073CF] px-10 py-4 rounded font-bold text-lg hover:bg-gray-100 transition-colors shadow-lg"
+          >
+            Create Free Account
+          </Link>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
