@@ -28,6 +28,22 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <footer className="bg-slate-950 border-t border-slate-900 py-12 px-4 mt-20">
+          <div className="max-w-4xl mx-auto text-center space-y-6 text-slate-500 text-sm">
+            <p>
+              <strong>FTC Disclosure:</strong> This website is reader-supported. We may earn a commission if you purchase through links on our site,
+              at no extra cost to you.
+            </p>
+            <p>
+              <strong>Medical Disclaimer:</strong> The content on this site is for informational purposes only. StayFitWithAI is not a healthcare provider
+              and does not sell prescription medications. Any products mentioned (such as Mitolyn) are dietary supplements and are not approved by the FDA
+              to treat, cure, or prevent any disease. Always consult your doctor before starting any new regimen.
+            </p>
+            <div className="pt-8 text-slate-700">
+              &copy; 2025 StayFitWithAI. All rights reserved.
+            </div>
+          </div>
+        </footer>
       </body>
     </html>
   );

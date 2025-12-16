@@ -83,12 +83,14 @@ export default function CostCalculator({ defaultCity = "Austin", defaultState = 
               </select>
             </div>
 
+            <div className="text-xs text-center text-slate-500 mt-6 mb-1 uppercase tracking-widest">Sponsored Option</div>
             <button
               onClick={() => window.open(CONFIG.AFFILIATE_LINK, '_blank')}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-900/20 mt-4 animate-pulse hover:animate-none"
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-900/20 animate-pulse hover:animate-none"
             >
               {CONFIG.BUTTON_TEXT}
             </button>
+            <p className="text-xs text-center text-slate-600 mt-2">{CONFIG.BUTTON_SUBTEXT}</p>
           </div>
         </div>
       ) : (
