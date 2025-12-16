@@ -3,17 +3,6 @@ import Link from 'next/link';
 export default function GoalsPage() {
     return (
         <div className="bg-[#F5F5F5] min-h-screen">
-            {/* Secondary Navigation */}
-            <div className="bg-[#E8F4FC] border-b border-[#C5DCE9]">
-                <div className="max-w-4xl mx-auto px-4">
-                    <div className="flex gap-6 text-sm">
-                        <Link href="/" className="py-2.5 text-gray-600 hover:text-[#0073CF] border-b-2 border-transparent">Home</Link>
-                        <Link href="/goals" className="py-2.5 text-[#0073CF] font-medium border-b-2 border-[#0073CF]">Goals</Link>
-                        <Link href="/check-in" className="py-2.5 text-gray-600 hover:text-[#0073CF] border-b-2 border-transparent">Check-In</Link>
-                    </div>
-                </div>
-            </div>
-
             <div className="max-w-4xl mx-auto px-4 py-6">
                 <h1 className="text-2xl font-bold text-gray-800 mb-6">Your Goals</h1>
 
