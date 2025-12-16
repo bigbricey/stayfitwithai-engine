@@ -1,110 +1,183 @@
+'use client';
+
 import Link from 'next/link';
-import TimelineCalculator from '@/components/TimelineCalculator';
 
-// MFP-style Today section for logged-in appearance
-function TodaySection() {
+export default function Home() {
+  // Mock data
+  const calorieGoal = 2000;
+  const foodCalories = 0;
+  const exerciseCalories = 0;
+  const remaining = calorieGoal - foodCalories + exerciseCalories;
+
+  const macros = {
+    carbs: { current: 0, goal: 250 },
+    fat: { current: 0, goal: 67 },
+    protein: { current: 0, goal: 100 },
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
-      {/* Today Header with Avatar and Streak */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-            <span className="text-gray-600 text-lg">👤</span>
-          </div>
-          <h1 className="text-2xl font-semibold text-gray-800">Today</h1>
-        </div>
-        <div className="text-right">
-          <div className="text-3xl font-bold text-gray-800">1</div>
-          <div className="text-xs text-gray-500 uppercase tracking-wider">Day<br />Streak</div>
-        </div>
-      </div>
+    <div className="bg-[#F5F5F5] min-h-screen">
+      <div className="max-w-4xl mx-auto px-4 py-6">
 
-      {/* Calories and Macros Cards */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Calories Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-1">Calories</h2>
-          <p className="text-sm text-gray-500 mb-4">Remaining = Goal - Food + Exercise</p>
-
-          <div className="flex items-center gap-6">
-            {/* Calorie Ring */}
-            <div className="relative">
-              <svg width="120" height="120" className="transform -rotate-90">
-                <circle cx="60" cy="60" r="50" stroke="#E5E7EB" strokeWidth="8" fill="none" />
-                <circle
-                  cx="60" cy="60" r="50"
-                  stroke="#3B9FD8"
-                  strokeWidth="8"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeDasharray={2 * Math.PI * 50}
-                  strokeDashoffset={0}
-                />
+        {/* Today Section */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            {/* Avatar */}
+            <div className="w-14 h-14 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
+              <svg className="w-10 h-10 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold text-gray-800">2000</span>
-                <span className="text-xs text-gray-500">Remaining</span>
-              </div>
             </div>
+            {/* Today Text */}
+            <h1 className="text-2xl font-semibold text-gray-800">Today</h1>
+          </div>
 
-            {/* Stats */}
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-3">
-                <span className="text-xl">🎯</span>
-                <div>
-                  <div className="text-gray-500">Base Goal</div>
-                  <div className="font-semibold text-gray-800">2000</div>
+          {/* Streak Counter */}
+          <div className="text-right">
+            <div className="text-3xl font-bold text-gray-800">1</div>
+            <div className="text-xs text-gray-500 uppercase leading-tight">Day<br />Streak</div>
+          </div>
+        </div>
+
+        {/* Cards Row */}
+        <div className="grid md:grid-cols-2 gap-4">
+
+          {/* Calories Card */}
+          <div className="bg-white rounded-lg shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-800 mb-1">Calories</h2>
+            <p className="text-sm text-gray-500 mb-5">Remaining = Goal - Food + Exercise</p>
+
+            <div className="flex items-center gap-6">
+              {/* Calorie Ring */}
+              <div className="relative flex-shrink-0">
+                <svg width="130" height="130" className="transform -rotate-90">
+                  {/* Background ring */}
+                  <circle
+                    cx="65" cy="65" r="55"
+                    stroke="#E5E7EB"
+                    strokeWidth="12"
+                    fill="none"
+                  />
+                  {/* Progress ring */}
+                  <circle
+                    cx="65" cy="65" r="55"
+                    stroke="#3B9FD8"
+                    strokeWidth="12"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeDasharray={2 * Math.PI * 55}
+                    strokeDashoffset={0}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-3xl font-bold text-gray-800">{remaining}</span>
+                  <span className="text-xs text-gray-500">Remaining</span>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xl">🍽️</span>
-                <div>
-                  <div className="text-gray-500">Food</div>
-                  <div className="font-semibold text-gray-800">0</div>
+
+              {/* Breakdown */}
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-gray-500">Base Goal</div>
+                    <div className="font-medium text-gray-800">{calorieGoal}</div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xl">🔥</span>
-                <div>
-                  <div className="text-gray-500">Exercise</div>
-                  <div className="font-semibold text-gray-800">0</div>
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-gray-500">Food</div>
+                    <div className="font-medium text-gray-800">{foodCalories}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-gray-500">Exercise</div>
+                    <div className="font-medium text-gray-800">{exerciseCalories}</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Macros Card */}
+          <div className="bg-white rounded-lg shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Macros</h2>
+
+            {/* Three Macro Rings */}
+            <div className="flex justify-around mb-4">
+              <MacroRing
+                label="Carbohydrates"
+                current={macros.carbs.current}
+                goal={macros.carbs.goal}
+                color="#4ECDC4"
+              />
+              <MacroRing
+                label="Fat"
+                current={macros.fat.current}
+                goal={macros.fat.goal}
+                color="#FF6B6B"
+              />
+              <MacroRing
+                label="Protein"
+                current={macros.protein.current}
+                goal={macros.protein.goal}
+                color="#45B7D1"
+              />
+            </div>
+
+            {/* Go Premium Button */}
+            <button className="w-full bg-[#FFD700] hover:bg-[#FFC800] text-gray-800 font-semibold py-2.5 rounded flex items-center justify-center gap-2 transition-colors">
+              <span>👑</span>
+              <span>Go Premium</span>
+            </button>
+          </div>
         </div>
 
-        {/* Macros Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Macros</h2>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <MacroRing label="Carbs" current={0} goal={250} color="#4ECDC4" />
-            <MacroRing label="Fat" current={0} goal={67} color="#FF6B6B" />
-            <MacroRing label="Protein" current={0} goal={100} color="#45B7D1" />
-          </div>
-          <Link href="/signup" className="block mt-4 bg-yellow-400 text-gray-800 text-center py-2 rounded font-semibold hover:bg-yellow-500 transition-colors">
-            Go Premium 👑
-          </Link>
+        {/* Ad Banner Placeholder */}
+        <div className="mt-6 bg-gray-200 rounded-lg h-24 flex items-center justify-center text-gray-500">
+          Advertisement
         </div>
+
       </div>
     </div>
   );
 }
 
 function MacroRing({ label, current, goal, color }: { label: string; current: number; goal: number; color: string }) {
-  const radius = 30;
+  const radius = 35;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference * (1 - (goal > 0 ? current / goal : 0));
+  const progress = goal > 0 ? current / goal : 0;
+  const offset = circumference * (1 - progress);
 
   return (
-    <div>
+    <div className="text-center">
       <div className="relative inline-block">
-        <svg width="80" height="80" className="transform -rotate-90">
-          <circle cx="40" cy="40" r={radius} stroke="#E5E7EB" strokeWidth="6" fill="none" />
+        <svg width="90" height="90" className="transform -rotate-90">
           <circle
-            cx="40" cy="40" r={radius}
+            cx="45" cy="45" r={radius}
+            stroke="#E5E7EB"
+            strokeWidth="8"
+            fill="none"
+          />
+          <circle
+            cx="45" cy="45" r={radius}
             stroke={color}
-            strokeWidth="6"
+            strokeWidth="8"
             fill="none"
             strokeLinecap="round"
             strokeDasharray={circumference}
@@ -112,80 +185,11 @@ function MacroRing({ label, current, goal, color }: { label: string; current: nu
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-sm font-bold text-gray-800">{current}</span>
+          <span className="text-lg font-bold text-gray-800">{current}</span>
           <span className="text-xs text-gray-400">/{goal}g</span>
         </div>
       </div>
-      <div className="text-sm text-gray-600 mt-1">{label}</div>
-    </div>
-  );
-}
-
-export default function Home() {
-  return (
-    <div className="bg-gray-100">
-      {/* MFP-style Today Section */}
-      <TodaySection />
-
-      {/* Divider */}
-      <div className="border-t border-gray-200"></div>
-
-      {/* Calorie Calculator Section */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-800 text-center mb-2">Weight Loss Timeline Forecaster</h2>
-          <p className="text-gray-500 text-center mb-8">Science-based predictions using the Mifflin-St Jeor equation</p>
-          <TimelineCalculator />
-        </div>
-      </div>
-
-      {/* Features Grid */}
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        <h2 className="text-3xl font-bold text-gray-800 text-center mb-4">Why Choose StayFitWithAI?</h2>
-        <p className="text-gray-600 text-center mb-8 max-w-2xl mx-auto">
-          Everything you need to reach your fitness goals, completely free.
-        </p>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-[#0073CF] rounded-lg flex items-center justify-center mb-4">
-              <span className="text-2xl">📊</span>
-            </div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Track Calories</h3>
-            <p className="text-gray-600">Log your meals and track calories with our database of 380,000+ foods.</p>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-[#0073CF] rounded-lg flex items-center justify-center mb-4">
-              <span className="text-2xl">🏃</span>
-            </div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Log Exercise</h3>
-            <p className="text-gray-600">Track your workouts and see how many calories you burn each day.</p>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-[#0073CF] rounded-lg flex items-center justify-center mb-4">
-              <span className="text-2xl">📈</span>
-            </div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">See Progress</h3>
-            <p className="text-gray-600">Watch your weight trend over time with beautiful charts and insights.</p>
-          </div>
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="bg-[#0073CF] py-12 px-4">
-        <div className="max-w-4xl mx-auto text-center text-white">
-          <h2 className="text-2xl font-bold mb-4">Ready to Start Your Journey?</h2>
-          <p className="text-blue-100 mb-6">Join for free and start tracking your nutrition today.</p>
-          <Link
-            href="/signup"
-            className="inline-block bg-white text-[#0073CF] px-8 py-3 rounded font-bold hover:bg-gray-100 transition-colors"
-          >
-            Create Free Account
-          </Link>
-        </div>
-      </div>
+      <div className="text-xs text-gray-600 mt-1">{label}</div>
     </div>
   );
 }
