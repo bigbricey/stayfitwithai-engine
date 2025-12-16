@@ -41,7 +41,20 @@ export default function SettingsPage() {
 
             if (user) {
                 setUserEmail(user.email || null);
-                setDisplayName(user.user_metadata?.full_name || user.email?.split('@')[0] || 'User');
+
+                // Try to get display_name from profiles table first
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('display_name')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile?.display_name) {
+                    setDisplayName(profile.display_name);
+                } else {
+                    // Fallback to auth metadata
+                    setDisplayName(user.user_metadata?.full_name || user.email?.split('@')[0] || 'User');
+                }
             }
             setIsLoading(false);
         }
