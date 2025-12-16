@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Link from "next/link";
+import Navigation from "@/components/Navigation";
 import "./globals.css";
 
 const inter = Inter({
@@ -21,80 +22,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased bg-gray-100`}>
-        {/* Top Header - MFP Blue Bar */}
-        <header className="bg-[#0073CF] text-white">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-between h-12">
-              {/* Logo */}
-              <Link href="/" className="flex items-center">
-                <span className="text-2xl font-bold tracking-tight">stayfitwithai</span>
-              </Link>
-
-              {/* User Links - MFP Style */}
-              <div className="flex items-center gap-3 text-sm">
-                <span>Hi, <Link href="/profile" className="font-medium hover:underline">User</Link></span>
-                <span className="text-white/50">|</span>
-                <Link href="/mail" className="hover:underline flex items-center gap-1">
-                  <span>✉️</span> <span className="bg-white/20 px-1.5 rounded text-xs">0</span>
-                </Link>
-                <Link href="/notifications" className="hover:underline flex items-center gap-1">
-                  <span>👤</span> <span className="bg-white/20 px-1.5 rounded text-xs">0</span>
-                </Link>
-                <span className="text-white/50">|</span>
-                <Link href="/help" className="hover:underline">Help</Link>
-                <Link href="/settings" className="hover:underline">Settings</Link>
-                <Link href="/api/auth/signout" className="hover:underline">Log Out</Link>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Navigation - Darker Blue */}
-        <nav className="bg-[#005AA7]">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex">
-              <Link href="/" className="px-4 py-2.5 text-sm font-medium text-white bg-[#004080]">
-                MY HOME
-              </Link>
-              <Link href="/food" className="px-4 py-2.5 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
-                FOOD
-              </Link>
-              <Link href="/exercise" className="px-4 py-2.5 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
-                EXERCISE
-              </Link>
-              <Link href="/reports" className="px-4 py-2.5 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
-                REPORTS
-              </Link>
-              <Link href="/goals" className="px-4 py-2.5 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
-                APPS
-              </Link>
-              <Link href="/community" className="px-5 py-3 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
-                COMMUNITY
-              </Link>
-              <Link href="/blog" className="px-5 py-3 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
-                BLOG
-              </Link>
-              <Link href="/premium" className="px-5 py-3 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
-                PREMIUM
-              </Link>
-            </div>
-          </div>
-        </nav>
-
-        {/* Secondary Navigation - Light Blue (MFP Style) */}
-        <div className="bg-[#E8F4FC] border-b border-[#C5DCE9]">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex gap-6 text-sm">
-              <Link href="/dashboard" className="py-2.5 text-[#0073CF] font-medium border-b-2 border-[#0073CF]">Home</Link>
-              <Link href="/goals" className="py-2.5 text-gray-600 hover:text-[#0073CF] border-b-2 border-transparent">Goals</Link>
-              <Link href="/check-in" className="py-2.5 text-gray-600 hover:text-[#0073CF] border-b-2 border-transparent">Check-In</Link>
-              <Link href="/mail" className="py-2.5 text-gray-600 hover:text-[#0073CF] border-b-2 border-transparent">Mail</Link>
-              <Link href="/profile" className="py-2.5 text-gray-600 hover:text-[#0073CF] border-b-2 border-transparent">Profile</Link>
-              <Link href="/friends" className="py-2.5 text-gray-600 hover:text-[#0073CF] border-b-2 border-transparent">Friends</Link>
-              <Link href="/settings" className="py-2.5 text-gray-600 hover:text-[#0073CF] border-b-2 border-transparent">Settings</Link>
-            </div>
-          </div>
-        </div>
+        {/* Navigation with active tab highlighting */}
+        <Navigation />
 
         {/* Main Content */}
         <main className="min-h-screen">
