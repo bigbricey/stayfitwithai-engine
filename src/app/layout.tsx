@@ -56,16 +56,16 @@ export default function RootLayout({
               <Link href="/" className="px-4 py-2.5 text-sm font-medium text-white bg-[#004080]">
                 MY HOME
               </Link>
-              <Link href="/dashboard" className="px-5 py-3 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
+              <Link href="/food" className="px-4 py-2.5 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
                 FOOD
               </Link>
-              <Link href="/exercise" className="px-5 py-3 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
+              <Link href="/exercise" className="px-4 py-2.5 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
                 EXERCISE
               </Link>
-              <Link href="/tools" className="px-5 py-3 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
+              <Link href="/reports" className="px-4 py-2.5 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
                 REPORTS
               </Link>
-              <Link href="/goals" className="px-5 py-3 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
+              <Link href="/goals" className="px-4 py-2.5 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
                 APPS
               </Link>
               <Link href="/community" className="px-5 py-3 text-sm font-medium text-white/90 hover:bg-[#004080] transition-colors">
