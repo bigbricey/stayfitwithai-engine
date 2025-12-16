@@ -35,8 +35,9 @@ export default function RootLayout({
               <div className="flex items-center gap-6">
                 <Link href="/tools" className="text-sm text-slate-400 hover:text-white transition-colors">Tools</Link>
                 <Link href="/goals" className="text-sm text-slate-400 hover:text-white transition-colors">Goals</Link>
-                <Link href="/" className="text-sm bg-orange-500/10 text-orange-400 px-4 py-2 rounded-lg hover:bg-orange-500/20 transition-colors">
-                  Timeline Calculator
+                <Link href="/login" className="text-sm text-slate-400 hover:text-white transition-colors">Login</Link>
+                <Link href="/dashboard" className="text-sm bg-orange-500/10 text-orange-400 px-4 py-2 rounded-lg hover:bg-orange-500/20 transition-colors">
+                  My Dashboard
                 </Link>
               </div>
             </div>
