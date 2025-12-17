@@ -34,14 +34,17 @@ export async function middleware(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // Protect dashboard routes
-    if (request.nextUrl.pathname.startsWith('/dashboard')) {
-        if (!user) {
-            const url = request.nextUrl.clone();
-            url.pathname = '/login';
-            url.searchParams.set('redirect', request.nextUrl.pathname);
-            return NextResponse.redirect(url);
-        }
+    // Protect dashboard and home routes (require authentication)
+    const protectedPaths = ['/', '/dashboard'];
+    const isProtectedPath = protectedPaths.some(path =>
+        request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith('/dashboard')
+    );
+
+    if (isProtectedPath && !user) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/login';
+        url.searchParams.set('redirect', request.nextUrl.pathname);
+        return NextResponse.redirect(url);
     }
 
     // Redirect logged-in users from login/signup to dashboard
