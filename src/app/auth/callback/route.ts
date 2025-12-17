@@ -14,14 +14,18 @@ export async function GET(request: Request) {
     }
 
     if (code) {
+        console.log('TRACE 1: Code received, getting cookies');
         const cookieStore = await cookies();
+        console.log('TRACE 2: Cookie store obtained');
         // Force Next.js to read cookies (Fix for Next.js 14 lazy cookies / PKCE)
-        cookieStore.getAll();
+        const allCookies = cookieStore.getAll();
+        console.log('TRACE 3: Cookies read, count:', allCookies.length, 'Names:', allCookies.map(c => c.name));
 
         // PHASE 1: Exchange Code (We collect cookies but will DISCARD them)
         // These cookies contain the massive provider_token that breaks the browser
         const fatCookies: { name: string; value: string; options: CookieOptions }[] = [];
 
+        console.log('TRACE 4: Creating exchange client');
         const supabaseExchange = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -39,6 +43,7 @@ export async function GET(request: Request) {
                 },
             }
         );
+        console.log('TRACE 5: Exchange client created, calling exchangeCodeForSession');
 
         const { data, error: sessionError } = await supabaseExchange.auth.exchangeCodeForSession(code);
 
