@@ -47,14 +47,22 @@ export async function GET(request: Request) {
 
         if (!sessionError) {
             console.log('Session exchange successful, redirecting to:', next);
+            console.log('Cookies to set:', cookiesToSet.map(c => ({ name: c.name, hasValue: !!c.value, options: c.options })));
 
             // Create redirect response
             const response = NextResponse.redirect(`${origin}${next}`);
 
             // 🚨 CRITICAL: Set all cookies on the redirect response
-            // This is required because cookieStore.set() doesn't work with redirects
+            // Force the domain to be the root domain for cross-subdomain access
             for (const { name, value, options } of cookiesToSet) {
-                response.cookies.set(name, value, options);
+                // Override domain to ensure cookies work across www and non-www
+                const cookieOptions = {
+                    ...options,
+                    // Remove any explicit domain to let the browser use the current domain
+                    // This ensures www.stayfitwithai.com sets cookies for www.stayfitwithai.com
+                    domain: undefined,
+                };
+                response.cookies.set(name, value, cookieOptions);
             }
 
             return response;
