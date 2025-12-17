@@ -4,125 +4,90 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
     console.error('=== AUTH CALLBACK ROUTE HIT ===');
+    console.error('Timestamp:', new Date().toISOString());
     console.error('Full URL:', request.url);
 
     const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get('code');
-    const next = searchParams.get('redirect') || '/';
-    const error = searchParams.get('error');
+    const next = searchParams.get('redirect') ?? '/dashboard';
 
-    console.error('Parsed params:', { hasCode: !!code, codeLength: code?.length, next, error, origin });
-
-    if (error) {
-        console.error('OAuth provider returned error:', error);
-        return NextResponse.redirect(`${origin}/login?error=${error}`);
-    }
+    console.error('Params:', { code: code?.substring(0, 20) + '...', next, origin });
 
     if (code) {
-        try {
-            console.error('TRACE 1: Code received, getting cookies');
-            const cookieStore = await cookies();
-            console.error('TRACE 2: Cookie store obtained');
-            // Force Next.js to read cookies (Fix for Next.js 14 lazy cookies / PKCE)
-            const allCookies = cookieStore.getAll();
-            console.error('TRACE 3: Cookies read, count:', allCookies.length, 'Names:', allCookies.map(c => c.name));
+        console.error('Code present, starting cookie operations');
 
-            // PHASE 1: Exchange Code (We collect cookies but will DISCARD them)
-            // These cookies contain the massive provider_token that breaks the browser
-            const fatCookies: { name: string; value: string; options: CookieOptions }[] = [];
+        const cookieStore = await cookies();
 
-            console.error('TRACE 4: Creating exchange client');
-            const supabaseExchange = createServerClient(
-                process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-                {
-                    cookies: {
-                        get(name: string) {
-                            return cookieStore.get(name)?.value;
-                        },
-                        set(name: string, value: string, options: CookieOptions) {
-                            fatCookies.push({ name, value, options });
-                        },
-                        remove(name: string, options: CookieOptions) {
-                            fatCookies.push({ name, value: '', options: { ...options, maxAge: 0 } });
-                        },
+        // Log all current cookies for debugging
+        const allCookies = cookieStore.getAll();
+        console.error('Current cookies:', allCookies.map(c => ({ name: c.name, len: c.value.length })));
+
+        // Check for PKCE code_verifier
+        const codeVerifier = allCookies.find(c => c.name.includes('code_verifier'));
+        console.error('Code verifier cookie:', codeVerifier ? 'PRESENT' : 'MISSING');
+
+        // Create response to set cookies on
+        const response = NextResponse.redirect(`${origin}${next}`);
+
+        const supabase = createServerClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            {
+                cookies: {
+                    get(name: string) {
+                        const value = cookieStore.get(name)?.value;
+                        console.error(`Cookie GET: ${name} = ${value ? value.substring(0, 30) + '...' : 'undefined'}`);
+                        return value;
                     },
-                }
-            );
-            console.error('TRACE 5: Exchange client created, calling exchangeCodeForSession');
+                    set(name: string, value: string, options: CookieOptions) {
+                        console.error(`Cookie SET: ${name} (${value.length} chars)`);
+                        response.cookies.set({
+                            name,
+                            value,
+                            ...options,
+                        });
+                    },
+                    remove(name: string, options: CookieOptions) {
+                        console.error(`Cookie REMOVE: ${name}`);
+                        response.cookies.set({
+                            name,
+                            value: '',
+                            ...options,
+                        });
+                    },
+                },
+            }
+        );
 
-            const { data, error: sessionError } = await supabaseExchange.auth.exchangeCodeForSession(code);
+        console.error('Supabase client created, exchanging code for session...');
+
+        try {
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
             console.error('Exchange result:', {
                 hasData: !!data,
                 hasSession: !!data?.session,
-                errorMessage: sessionError?.message,
-                errorName: sessionError?.name
+                hasUser: !!data?.session?.user,
+                userEmail: data?.session?.user?.email,
+                error: error?.message,
+                errorStatus: error?.status,
             });
 
-            if (!sessionError && data?.session) {
-                const session = data.session;
-
-                // PHASE 2: Sanitize Session (Remove the bloat)
-                // @ts-ignore
-                if (session.provider_token) delete session.provider_token;
-                // @ts-ignore
-                if (session.provider_refresh_token) delete session.provider_refresh_token;
-                // @ts-ignore
-                if (session.user?.app_metadata?.provider_token) delete session.user.app_metadata.provider_token;
-
-                console.error('Session sanitized (tokens removed). Fat cookies ignored:', fatCookies.length);
-
-                // PHASE 3: Persist CLEANED Session (Collect THESE cookies)
-                const cleanCookies: { name: string; value: string; options: CookieOptions }[] = [];
-
-                const supabasePersist = createServerClient(
-                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-                    {
-                        cookies: {
-                            get(name: string) {
-                                return cookieStore.get(name)?.value;
-                            },
-                            set(name: string, value: string, options: CookieOptions) {
-                                cleanCookies.push({ name, value, options });
-                            },
-                            remove(name: string, options: CookieOptions) {
-                                cleanCookies.push({ name, value: '', options: { ...options, maxAge: 0 } });
-                            },
-                        },
-                    }
-                );
-
-                // This triggers setAll with the STRIPPED session
-                await supabasePersist.auth.setSession(session);
-
-                console.error('Clean session set. Clean cookies:', cleanCookies.length, 'Redirecting to:', next);
-
-                // PHASE 4: Build Response with ONLY the clean cookies
-                const response = NextResponse.redirect(`${origin}${next}`, {
-                    status: 303,
-                });
-
-                for (const { name, value, options } of cleanCookies) {
-                    const cookieOptions = {
-                        ...options,
-                        domain: undefined,
-                    };
-                    response.cookies.set(name, value, cookieOptions);
-                }
-
-                return response;
+            if (error) {
+                console.error('Session exchange FAILED:', error.message);
+                return NextResponse.redirect(`${origin}/login?error=exchange_failed`);
             }
 
-            console.error('Session exchange error:', sessionError);
+            if (data?.session) {
+                console.error('Session established! Redirecting to:', next);
+                return response;
+            }
         } catch (err) {
-            console.error('=== UNHANDLED EXCEPTION IN CALLBACK ===');
-            console.error('Error:', err);
-            console.error('Stack:', err instanceof Error ? err.stack : 'No stack');
+            console.error('EXCEPTION during exchange:', err);
+            return NextResponse.redirect(`${origin}/login?error=exception`);
         }
     }
 
-    console.error('=== FALLING THROUGH TO AUTH ERROR REDIRECT ===');
+    console.error('No code provided or session failed, redirecting to login');
     return NextResponse.redirect(`${origin}/login?error=auth_error`);
 }
