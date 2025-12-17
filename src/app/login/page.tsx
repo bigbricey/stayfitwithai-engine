@@ -43,10 +43,12 @@ function LoginForm() {
 
     const handleGoogleLogin = async () => {
         const supabase = createClient();
+        const redirectTo = `${window.location.origin}/auth/callback`;
+        console.log('OAuth redirectTo:', redirectTo);
         await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: 'https://www.stayfitwithai.com/auth/callback',
+                redirectTo,
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',

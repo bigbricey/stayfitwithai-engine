@@ -3,10 +3,15 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
+    console.error('=== AUTH CALLBACK ROUTE HIT ===');
+    console.error('Full URL:', request.url);
+
     const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get('code');
     const next = searchParams.get('redirect') || '/';
     const error = searchParams.get('error');
+
+    console.error('Parsed params:', { hasCode: !!code, codeLength: code?.length, next, error, origin });
 
     if (error) {
         console.error('OAuth provider returned error:', error);
