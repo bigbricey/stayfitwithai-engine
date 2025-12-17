@@ -8,7 +8,6 @@ export async function GET(request: Request) {
     const next = searchParams.get('redirect') || '/';
     const error = searchParams.get('error');
 
-    // If OAuth provider returned an error
     if (error) {
         console.error('OAuth provider returned error:', error);
         return NextResponse.redirect(`${origin}/login?error=${error}`);
@@ -16,13 +15,14 @@ export async function GET(request: Request) {
 
     if (code) {
         const cookieStore = await cookies();
-        // Force Next.js to read cookies (Fix for Next.js 14 lazy cookies)
+        // Force Next.js to read cookies (Fix for Next.js 14 lazy cookies / PKCE)
         cookieStore.getAll();
 
-        // 1. CLIENT A: THE EXCHANGER (Read-Only)
-        // ✅ CRITICAL: Must return actual cookies so it can find the PKCE Code Verifier
-        // 🛑 CRITICAL: 'set'/'remove' are empty to stop the massive 'provider_token' from being set early
-        const supabaseExchanger = createServerClient(
+        // PHASE 1: Exchange Code (We collect cookies but will DISCARD them)
+        // These cookies contain the massive provider_token that breaks the browser
+        const fatCookies: { name: string; value: string; options: CookieOptions }[] = [];
+
+        const supabaseExchange = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
             {
@@ -31,22 +31,21 @@ export async function GET(request: Request) {
                         return cookieStore.get(name)?.value;
                     },
                     set(name: string, value: string, options: CookieOptions) {
-                        // SILENTLY IGNORE: Do not set cookies here.
+                        fatCookies.push({ name, value, options });
                     },
                     remove(name: string, options: CookieOptions) {
-                        // SILENTLY IGNORE: Do not remove cookies here.
+                        fatCookies.push({ name, value: '', options: { ...options, maxAge: 0 } });
                     },
                 },
             }
         );
 
-        const { data, error: sessionError } = await supabaseExchanger.auth.exchangeCodeForSession(code);
+        const { data, error: sessionError } = await supabaseExchange.auth.exchangeCodeForSession(code);
 
         if (!sessionError && data?.session) {
             const session = data.session;
 
-            // 2. SANITIZE: Strip the massive provider tokens
-            // This brings the payload size down from ~4KB+ to ~1KB, fixing the browser drop issue
+            // PHASE 2: Sanitize Session (Remove the bloat)
             // @ts-ignore
             if (session.provider_token) delete session.provider_token;
             // @ts-ignore
@@ -54,48 +53,52 @@ export async function GET(request: Request) {
             // @ts-ignore
             if (session.user?.app_metadata?.provider_token) delete session.user.app_metadata.provider_token;
 
-            console.log('Session sanitized (tokens removed). Persisting clean session.');
+            console.log('Session sanitized (tokens removed). Fat cookies ignored:', fatCookies.length);
 
-            // 3. Create Response with 303 Redirect
-            // 303 helps with SameSite=Lax issues on redirect
-            const response = NextResponse.redirect(`${origin}${next}`, {
-                status: 303,
-            });
+            // PHASE 3: Persist CLEANED Session (Collect THESE cookies)
+            const cleanCookies: { name: string; value: string; options: CookieOptions }[] = [];
 
-            // 4. CLIENT B: THE PERSISTER (Write-Only)
-            // This client will trigger `setAll` using the sanitized session object
-            const supabasePersister = createServerClient(
+            const supabasePersist = createServerClient(
                 process.env.NEXT_PUBLIC_SUPABASE_URL!,
                 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
                 {
                     cookies: {
-                        getAll() { return cookieStore.getAll() },
-                        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
-                            // Now we write the *clean* cookies to the response
-                            cookiesToSet.forEach(({ name, value, options }) => {
-                                // Defaulting domain to undefined ensures it works on www and non-www
-                                const cookieOptions = {
-                                    ...options,
-                                    domain: undefined,
-                                };
-                                response.cookies.set(name, value, cookieOptions);
-                            });
+                        get(name: string) {
+                            return cookieStore.get(name)?.value;
+                        },
+                        set(name: string, value: string, options: CookieOptions) {
+                            cleanCookies.push({ name, value, options });
+                        },
+                        remove(name: string, options: CookieOptions) {
+                            cleanCookies.push({ name, value: '', options: { ...options, maxAge: 0 } });
                         },
                     },
                 }
             );
 
-            // 5. Manually set the session
-            // This calculates the cookies (handling chunking if needed) and writes them to `response`
-            await supabasePersister.auth.setSession(session);
+            // This triggers setAll with the STRIPPED session
+            await supabasePersist.auth.setSession(session);
 
-            console.log('Clean session set successfully. Redirecting to:', next);
+            console.log('Clean session set. Clean cookies:', cleanCookies.length, 'Redirecting to:', next);
+
+            // PHASE 4: Build Response with ONLY the clean cookies
+            const response = NextResponse.redirect(`${origin}${next}`, {
+                status: 303,
+            });
+
+            for (const { name, value, options } of cleanCookies) {
+                const cookieOptions = {
+                    ...options,
+                    domain: undefined,
+                };
+                response.cookies.set(name, value, cookieOptions);
+            }
+
             return response;
         }
 
         console.error('Session exchange error:', sessionError);
     }
 
-    // Return user to login page on error
     return NextResponse.redirect(`${origin}/login?error=auth_error`);
 }
