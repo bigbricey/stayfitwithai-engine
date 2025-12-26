@@ -104,13 +104,14 @@ export function LifeScoreDashboard() {
             </div>
 
             {/* Level Up Modal */}
-            {showLevelUp && (
-                <LevelUpModal
-                    oldLevel={levelUpInfo.oldLevel}
-                    newLevel={levelUpInfo.newLevel}
-                    onClose={handleLevelUpClose}
-                />
-            )}
+            <LevelUpModal
+                isOpen={showLevelUp}
+                newLevel={levelUpInfo.newLevel}
+                newTitle="Fitness Warrior"
+                titleColor="text-cyan-400"
+                xpGained={100}
+                onClose={handleLevelUpClose}
+            />
         </div>
     );
 }
