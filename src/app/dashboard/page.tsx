@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SoloLevelingPage, SystemPanelWithHeader, SystemPanel } from '@/components/SoloLeveling';
-import { Utensils, Dumbbell, Moon, Droplet, Gem, ArrowRight, Lock, Activity } from 'lucide-react';
+import { Utensils, Dumbbell, Moon, Droplet, Gem, ArrowRight, ArrowLeft, Lock, Activity } from 'lucide-react';
 
 export default function GameHub() {
     const router = useRouter();
@@ -12,13 +12,6 @@ export default function GameHub() {
     useEffect(() => {
         setMounted(true);
     }, []);
-
-    const modules = [
-// ... (modules array remains same, skipped for brevity in tool call, will rely on "modules" already existing in context for mental model, but since this is a REPLACE block I need to be careful not to delete.
-// Wait, I can't skip content in ReplacementContent. I must include everything I am replacing or ensure the boundary is safe.
-// Let me target specifically the return statement block which is easier.
-// BUT I need to import SoloLevelingPage first.
-
 
     const modules = [
         {
