@@ -1,64 +1,16 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
-import { FoodLogForm, DailySummary } from '@/components/Food';
-import { saveMeal, getTodaysMeals } from '@/lib/actions/meals';
-import { Zap, Trophy } from 'lucide-react';
-
-interface Meal {
-  id: string;
-  name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  meal_type: string;
-  created_at: string;
-}
-
-function FloatingParticles() {
-  return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-      {[...Array(20)].map((_, i) => (
-        <div
-          key={i}
-          className="absolute w-1 h-1 bg-cyan-400 rounded-full opacity-30"
-          style={{
-            left: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 5}s`,
-            animationDuration: `${8 + Math.random() * 12}s`,
-            animation: `floatUp ${8 + Math.random() * 12}s linear infinite`,
-          }}
-        />
-      ))}
-      {[...Array(10)].map((_, i) => (
-        <div
-          key={`large-${i}`}
-          className="absolute w-2 h-2 bg-purple-500 rounded-full opacity-20"
-          style={{
-            left: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 8}s`,
-            animationDuration: `${12 + Math.random() * 8}s`,
-            animation: `floatUp ${12 + Math.random() * 8}s linear infinite`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Zap, Trophy, Target, TrendingUp, ChevronRight } from 'lucide-react';
 
 function AnimatedBackground() {
   return (
     <div className="fixed inset-0 z-0 overflow-hidden">
-      {/* Base gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#020408] via-[#0a1628] to-[#020408]" />
-
-      {/* Ambient glow orbs */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-      <div className="absolute top-1/2 left-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-
-      {/* Grid overlay */}
+      <div className="absolute top-1/2 left-0 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
       <div
         className="absolute inset-0 opacity-10"
         style={{
@@ -73,90 +25,98 @@ function AnimatedBackground() {
   );
 }
 
-export default function Home() {
-  const [meals, setMeals] = useState<Meal[]>([]);
-  const [isPending, startTransition] = useTransition();
-  const [showSuccess, setShowSuccess] = useState(false);
+function FloatingParticles() {
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      {[...Array(30)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute w-1 h-1 bg-cyan-400 rounded-full opacity-40"
+          style={{
+            left: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 5}s`,
+            animationDuration: `${8 + Math.random() * 12}s`,
+            animation: `floatUp ${8 + Math.random() * 12}s linear infinite`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+const features = [
+  { icon: Target, title: 'Track Macros', desc: 'Protein, carbs, fat - precision logging' },
+  { icon: TrendingUp, title: 'Level Up', desc: 'XP rewards for hitting your goals' },
+  { icon: Trophy, title: 'Compete', desc: 'Leaderboards with friends (coming soon)' },
+];
+
+export default function WelcomePage() {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
-  // Load today's meals on mount
   useEffect(() => {
     setMounted(true);
-    loadMeals();
   }, []);
-
-  const loadMeals = async () => {
-    try {
-      const todaysMeals = await getTodaysMeals();
-      setMeals(todaysMeals);
-    } catch (error) {
-      console.error('Error loading meals:', error);
-    }
-  };
-
-  const handleSubmit = async (mealData: {
-    name: string;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
-  }) => {
-    startTransition(async () => {
-      try {
-        await saveMeal(mealData);
-        await loadMeals(); // Refresh the list
-
-        // Show success animation
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 2000);
-      } catch (error) {
-        console.error('Error saving meal:', error);
-      }
-    });
-  };
 
   if (!mounted) return null;
 
   return (
-    <main className="min-h-screen relative">
+    <main className="min-h-screen relative flex flex-col items-center justify-center p-6">
       <AnimatedBackground />
       <FloatingParticles />
 
-      {/* Success Toast */}
-      {showSuccess && (
-        <div className="fixed top-4 right-4 z-50 animate-bounce">
-          <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-xl shadow-lg shadow-green-500/50 flex items-center gap-2">
-            <Zap className="w-5 h-5" />
-            <span className="font-bold">+XP Earned!</span>
+      <div className="relative z-10 max-w-lg w-full text-center">
+        {/* Logo / Title */}
+        <div className="mb-8">
+          <div className="inline-flex items-center justify-center p-4 bg-gradient-to-br from-cyan-500 via-purple-500 to-orange-500 rounded-3xl mb-6 shadow-2xl shadow-cyan-500/30">
+            <Zap className="w-12 h-12 text-white" />
           </div>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-3">
+            <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-orange-400 bg-clip-text text-transparent">
+              STAY FIT
+            </span>
+            <br />
+            <span className="text-white">WITH AI</span>
+          </h1>
+          <p className="text-gray-400 text-lg">
+            Level up your nutrition. Gamify your fitness.
+          </p>
         </div>
-      )}
 
-      {/* Header */}
-      <header className="relative z-10 p-4 border-b border-cyan-500/20">
-        <div className="max-w-2xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl">
-              <Trophy className="w-6 h-6 text-white" />
+        {/* Features */}
+        <div className="grid gap-4 mb-8">
+          {features.map((feature, i) => (
+            <div
+              key={feature.title}
+              className="flex items-center gap-4 bg-gray-900/60 border border-gray-700/50 rounded-xl p-4 text-left backdrop-blur-sm"
+              style={{ animationDelay: `${i * 0.1}s` }}
+            >
+              <div className="p-2 bg-gradient-to-br from-cyan-500/20 to-purple-500/20 rounded-lg">
+                <feature.icon className="w-6 h-6 text-cyan-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white">{feature.title}</h3>
+                <p className="text-sm text-gray-500">{feature.desc}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-black tracking-wider text-cyan-100">
-                FUEL TRACKER
-              </h1>
-              <p className="text-xs text-gray-500">Level up your nutrition</p>
-            </div>
-          </div>
+          ))}
         </div>
-      </header>
 
-      {/* Main Content */}
-      <div className="relative z-10 max-w-2xl mx-auto p-4 space-y-6">
-        {/* Daily Summary */}
-        <DailySummary meals={meals} />
+        {/* CTA Button */}
+        <button
+          onClick={() => router.push('/dashboard')}
+          className="w-full py-5 bg-gradient-to-r from-cyan-500 via-purple-500 to-cyan-500 text-white font-bold text-xl rounded-2xl 
+            hover:from-cyan-400 hover:via-purple-400 hover:to-cyan-400 
+            hover:shadow-2xl hover:shadow-cyan-500/40 hover:scale-[1.02]
+            transition-all duration-300 flex items-center justify-center gap-3 group"
+        >
+          <span>START TRACKING</span>
+          <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+        </button>
 
-        {/* Food Log Form */}
-        <FoodLogForm onSubmit={handleSubmit} isLoading={isPending} />
+        <p className="text-gray-600 text-sm mt-4">
+          Free to use • No account required
+        </p>
       </div>
     </main>
   );
