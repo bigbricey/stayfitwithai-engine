@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
     SoloLevelingPage,
@@ -9,7 +9,8 @@ import {
 } from '@/components/SoloLeveling';
 import { NotificationManager } from '@/components/SoloLeveling/SystemNotification';
 import { XPPopup } from '@/components/SoloLeveling/XPPopup';
-import { ArrowLeft, Coffee, Sun, Moon, Cookie, Plus } from 'lucide-react';
+import { ArrowLeft, Coffee, Sun, Moon, Cookie, Plus, Search, Loader2 } from 'lucide-react';
+import { saveMeal } from '@/lib/actions/meals';
 
 const MEAL_ICONS: Record<string, any> = {
     breakfast: Coffee,
@@ -17,6 +18,15 @@ const MEAL_ICONS: Record<string, any> = {
     dinner: Moon,
     snack: Cookie
 };
+
+interface NutritionResult {
+    name: string;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    fdcId: number;
+}
 
 interface Meal {
     id: string;
@@ -36,6 +46,7 @@ export default function MealEntryPage() {
 
     const [mounted, setMounted] = useState(false);
     const [isPending, setIsPending] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
 
     // Form State
     const [mealName, setMealName] = useState('');
@@ -43,6 +54,10 @@ export default function MealEntryPage() {
     const [protein, setProtein] = useState('');
     const [carbs, setCarbs] = useState('');
     const [fat, setFat] = useState('');
+
+    // Search Results
+    const [searchResults, setSearchResults] = useState<NutritionResult[]>([]);
+    const [showResults, setShowResults] = useState(false);
 
     // Feedback State
     const [notifications, setNotifications] = useState<{ id: string; message: string; type?: 'info' | 'success' | 'warning' }[]>([]);
@@ -55,6 +70,51 @@ export default function MealEntryPage() {
             router.push('/dashboard/food');
         }
     }, [mealType, router]);
+
+    // Debounced nutrition search
+    useEffect(() => {
+        if (!mealName || mealName.length < 2) {
+            setSearchResults([]);
+            setShowResults(false);
+            return;
+        }
+
+        const controller = new AbortController();
+        const timer = setTimeout(async () => {
+            setIsSearching(true);
+            try {
+                const res = await fetch(`/api/nutrition?q=${encodeURIComponent(mealName)}`, {
+                    signal: controller.signal
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setSearchResults(data.results || []);
+                    setShowResults(true);
+                }
+            } catch (err: any) {
+                if (err.name !== 'AbortError') {
+                    console.error('Search error:', err);
+                }
+            } finally {
+                setIsSearching(false);
+            }
+        }, 300); // 300ms debounce
+
+        return () => {
+            clearTimeout(timer);
+            controller.abort();
+        };
+    }, [mealName]);
+
+    const selectFood = (food: NutritionResult) => {
+        setMealName(food.name);
+        setCalories(food.calories.toString());
+        setProtein(food.protein.toString());
+        setCarbs(food.carbs.toString());
+        setFat(food.fat.toString());
+        setShowResults(false);
+        showNotification('NUTRITION DATA LOADED', 'info');
+    };
 
     const showNotification = (message: string, type: 'success' | 'info' | 'warning' = 'success') => {
         const id = Date.now().toString();
@@ -71,52 +131,32 @@ export default function MealEntryPage() {
 
         setIsPending(true);
         const calorieValue = parseInt(calories) || 0;
-        const xpGain = Math.floor(calorieValue / 20) + 10; // More XP for logging!
+        const xpGain = Math.floor(calorieValue / 20) + 10;
 
-        // Simulate save delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+        try {
+            // Save to Supabase
+            await saveMeal({
+                name: mealName || mealType.charAt(0).toUpperCase() + mealType.slice(1),
+                calories: calorieValue,
+                protein: parseInt(protein) || 0,
+                carbs: parseInt(carbs) || 0,
+                fat: parseInt(fat) || 0,
+                meal_type: mealType as 'breakfast' | 'lunch' | 'dinner' | 'snack',
+            });
 
-        // Create Meal Object
-        const newMeal: Meal = {
-            id: Date.now().toString(),
-            name: mealName || mealType.charAt(0).toUpperCase() + mealType.slice(1),
-            calories: calorieValue,
-            protein: parseInt(protein) || 0,
-            carbs: parseInt(carbs) || 0,
-            fat: parseInt(fat) || 0,
-            meal_type: mealType,
-            created_at: new Date().toISOString(),
-        };
+            // Show Feedback
+            showXPGain(xpGain);
+            showNotification(`${mealType.toUpperCase()} LOGGED SUCCESSFULLY`, 'success');
 
-        // Save to LocalStorage (simple persistence)
-        const saved = localStorage.getItem('stayfit_meals_today');
-        let currentMeals = [];
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved);
-                const today = new Date().toISOString().split('T')[0];
-                if (parsed.date === today) {
-                    currentMeals = parsed.meals || [];
-                }
-            } catch (e) {
-                console.error(e);
-            }
+            // Return to dashboard after short delay
+            setTimeout(() => {
+                router.push('/dashboard/food');
+            }, 1500);
+        } catch (error) {
+            console.error('Save error:', error);
+            showNotification('SAVE FAILED - TRY AGAIN', 'warning');
+            setIsPending(false);
         }
-
-        const updatedMeals = [...currentMeals, newMeal];
-        localStorage.setItem('stayfit_meals_today', JSON.stringify({
-            date: new Date().toISOString().split('T')[0],
-            meals: updatedMeals
-        }));
-
-        // Show Feedback
-        showXPGain(xpGain);
-        showNotification(`${mealType.toUpperCase()} LOGGED SUCCESSFULLY`, 'success');
-
-        // Return to dashboard after short delay
-        setTimeout(() => {
-            router.push('/dashboard/food');
-        }, 1500);
     };
 
     if (!mounted) return null;
@@ -153,80 +193,112 @@ export default function MealEntryPage() {
                     </button>
                 }
             >
-                <div className="space-y-8 mt-4">
-                    {/* Input Fields */}
-                    <div>
-                        <label className="text-white text-xs tracking-[0.2em] uppercase mb-3 block font-bold text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]">ITEM NAME</label>
-                        <input
-                            type="text"
-                            value={mealName}
-                            onChange={(e) => setMealName(e.target.value)}
-                            placeholder={`e.g. ${mealType.charAt(0).toUpperCase() + mealType.slice(1)} Item`}
-                            autoFocus
-                            className="w-full bg-black/40 border border-white/20 text-white px-6 py-4 placeholder-white/20 
-                                focus:border-cyan-400 focus:outline-none focus:shadow-[0_0_20px_rgba(34,211,238,0.2)] transition-all
-                                text-lg tracking-wider"
-                        />
+                <div className="space-y-6 mt-4">
+                    {/* Search Input with Autocomplete */}
+                    <div className="relative">
+                        <label className="text-white text-xs tracking-[0.2em] uppercase mb-3 block font-bold text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]">
+                            SEARCH FOOD
+                        </label>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={mealName}
+                                onChange={(e) => setMealName(e.target.value)}
+                                onFocus={() => searchResults.length > 0 && setShowResults(true)}
+                                placeholder="Type to search (e.g. grilled chicken)"
+                                autoFocus
+                                className="w-full bg-black/40 border border-white/20 text-white px-6 py-4 pr-12 placeholder-white/30 
+                                    focus:border-cyan-400 focus:outline-none focus:shadow-[0_0_20px_rgba(34,211,238,0.2)] transition-all
+                                    text-lg tracking-wider"
+                            />
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                {isSearching ? (
+                                    <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />
+                                ) : (
+                                    <Search className="w-5 h-5 text-white/40" />
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Search Results Dropdown */}
+                        {showResults && searchResults.length > 0 && (
+                            <div className="absolute z-50 w-full mt-1 bg-black/95 border border-cyan-400/50 max-h-48 overflow-y-auto">
+                                {searchResults.slice(0, 5).map((food, idx) => (
+                                    <button
+                                        key={food.fdcId || idx}
+                                        onClick={() => selectFood(food)}
+                                        className="w-full px-4 py-3 text-left hover:bg-cyan-400/20 border-b border-white/10 last:border-0 transition-colors"
+                                    >
+                                        <div className="text-white text-sm truncate">{food.name}</div>
+                                        <div className="text-white/50 text-xs mt-1">
+                                            {food.calories} cal • {food.protein}g P • {food.carbs}g C • {food.fat}g F
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
-                        <div className="col-span-2 md:col-span-1">
-                            <label className="text-white text-xs tracking-[0.2em] uppercase mb-3 block font-bold text-orange-400 drop-shadow-[0_0_5px_rgba(251,146,60,0.5)]">CALORIES</label>
+                    {/* Macro Display */}
+                    <div className="grid grid-cols-4 gap-3">
+                        <div className="text-center">
+                            <label className="text-orange-400 text-[10px] tracking-wider uppercase block mb-2 font-bold">CAL</label>
                             <input
                                 type="number"
                                 value={calories}
                                 onChange={(e) => setCalories(e.target.value)}
                                 placeholder="0"
-                                className="w-full bg-black/40 border border-white/20 text-white text-center text-4xl font-bold px-6 py-4 placeholder-white/10 
-                                    focus:border-orange-400 focus:outline-none focus:shadow-[0_0_20px_rgba(251,146,60,0.2)] transition-all"
+                                className="w-full bg-black/40 border border-orange-400/50 text-white text-center text-2xl font-bold px-2 py-3
+                                    focus:border-orange-400 focus:outline-none transition-all"
                             />
                         </div>
-
-                        <div className="col-span-2 md:col-span-1 grid grid-cols-3 gap-3">
-                            <div className="flex flex-col gap-2">
-                                <label className="text-white/60 text-[10px] tracking-wider uppercase text-center">PRO (g)</label>
-                                <input
-                                    type="number"
-                                    value={protein}
-                                    onChange={(e) => setProtein(e.target.value)}
-                                    placeholder="0"
-                                    className="w-full bg-black/40 border border-white/20 text-white text-center text-xl px-2 py-3
-                                        focus:border-red-400 focus:outline-none transition-all"
-                                />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <label className="text-white/60 text-[10px] tracking-wider uppercase text-center">CARB (g)</label>
-                                <input
-                                    type="number"
-                                    value={carbs}
-                                    onChange={(e) => setCarbs(e.target.value)}
-                                    placeholder="0"
-                                    className="w-full bg-black/40 border border-white/20 text-white text-center text-xl px-2 py-3
-                                        focus:border-yellow-400 focus:outline-none transition-all"
-                                />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <label className="text-white/60 text-[10px] tracking-wider uppercase text-center">FAT (g)</label>
-                                <input
-                                    type="number"
-                                    value={fat}
-                                    onChange={(e) => setFat(e.target.value)}
-                                    placeholder="0"
-                                    className="w-full bg-black/40 border border-white/20 text-white text-center text-xl px-2 py-3
-                                        focus:border-blue-400 focus:outline-none transition-all"
-                                />
-                            </div>
+                        <div className="text-center">
+                            <label className="text-red-400 text-[10px] tracking-wider uppercase block mb-2 font-bold">PRO</label>
+                            <input
+                                type="number"
+                                value={protein}
+                                onChange={(e) => setProtein(e.target.value)}
+                                placeholder="0"
+                                className="w-full bg-black/40 border border-red-400/50 text-white text-center text-2xl px-2 py-3
+                                    focus:border-red-400 focus:outline-none transition-all"
+                            />
+                        </div>
+                        <div className="text-center">
+                            <label className="text-yellow-400 text-[10px] tracking-wider uppercase block mb-2 font-bold">CARB</label>
+                            <input
+                                type="number"
+                                value={carbs}
+                                onChange={(e) => setCarbs(e.target.value)}
+                                placeholder="0"
+                                className="w-full bg-black/40 border border-yellow-400/50 text-white text-center text-2xl px-2 py-3
+                                    focus:border-yellow-400 focus:outline-none transition-all"
+                            />
+                        </div>
+                        <div className="text-center">
+                            <label className="text-blue-400 text-[10px] tracking-wider uppercase block mb-2 font-bold">FAT</label>
+                            <input
+                                type="number"
+                                value={fat}
+                                onChange={(e) => setFat(e.target.value)}
+                                placeholder="0"
+                                className="w-full bg-black/40 border border-blue-400/50 text-white text-center text-2xl px-2 py-3
+                                    focus:border-blue-400 focus:outline-none transition-all"
+                            />
                         </div>
                     </div>
 
+                    <p className="text-center text-white/40 text-xs">
+                        Search auto-fills nutrition • Edit values if needed
+                    </p>
+
                     {/* Submit Button */}
-                    <div className="pt-8">
+                    <div className="pt-4">
                         <SystemButton
                             onClick={handleSubmit}
                             disabled={isPending || !calories}
                             className={!calories ? "opacity-50 grayscale" : "border-cyan-400 text-cyan-400"}
                         >
-                            {isPending ? 'PROCESSING DATA...' : 'CONFIRM ENTRY'}
+                            {isPending ? 'SAVING...' : 'LOG ENTRY'}
                         </SystemButton>
                     </div>
                 </div>
