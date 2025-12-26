@@ -3,98 +3,101 @@
 import { ReactNode } from 'react';
 import { Plus, Zap, AlertCircle } from 'lucide-react';
 
-// Solo Leveling Background - "Level 18 / System Interface" Style (Shattered Circuitry & Flowing Shadows)
+// SoloLeveling Background - "Level 18 / System Interface" Style (RESTORED v5: Ciphering/Data Erosion)
 export function SoloLevelingBackground() {
     return (
-        <div className="fixed inset-0 z-0 overflow-hidden bg-[#000510]">
+        <div className="fixed inset-0 z-0 overflow-hidden bg-[#02050c]">
             {/* 
-                V8 CONCEPT: "Shattered Circuitry & Flowing Shadows"
-                - Background: Deep Electric Blue/Black (#000510 to #001030).
-                - Texture: "Shattered Circuitry" - dense, jagged, diagonal debris. Not a clean grid.
-                - Motion: "Dark Masses Moving" - A dynamic noise mask that hides/reveals parts of the circuitry 
-                  to simulate energy flowing/shadows drifting.
+                RESTORED CONCEPT: "Ciphering / Data Erosion" (v5)
+                - Requested by user: "Save this thing... I might want to use it."
+                - Features: 
+                    1. Electric Distortion: SVG Turbulence for "eroded" lines.
+                    2. Murky Smoke: Fluid noise background.
+                    3. Floating Particles: "Ciphering off" data effect.
             */}
-
-            <svg className="absolute inset-0 w-full h-full">
+            <svg className="absolute w-0 h-0">
                 <defs>
-                    {/* FILTER: "Flowing Shadow Mask" (The "Dark Masses") 
-                        Generates a moving cloudy noise texture to mask the background lines.
+                    {/* FILTER 1: Electric Distortion (The "Ciphering" Effect) 
+                        Creates the gritty, jagged, eroding edges.
                     */}
-                    <filter id="shadow-flow">
-                        <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="3" result="noise">
-                            <animate attributeName="baseFrequency" values="0.01;0.015;0.01" dur="15s" repeatCount="indefinite" />
+                    <filter id="electric-distortion">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="warp">
+                            {/* Slowly animate the noise to make edges ripple like smoke */}
+                            <animate attributeName="baseFrequency" values="0.04;0.041;0.04" dur="8s" repeatCount="indefinite" />
                         </feTurbulence>
-                        <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -9" in="noise" result="highContrastNoise" />
-                        <feComposite operator="in" in="SourceGraphic" in2="highContrastNoise" />
+                        <feDisplacementMap xChannelSelector="R" yChannelSelector="G" scale="4" in="SourceGraphic" in2="warp" />
                     </filter>
 
-                    {/* PATTERN: "Shattered Debris" (Dense, jagged lines) 
-                        Simulates the "corrupted tech" or "broken glass" look.
+                    {/* FILTER 2: Smoke Noise (The "Murky" Background)
+                        Creates the swirling, liquid-like atmosphere.
                     */}
-                    <pattern id="shattered-tech" x="0" y="0" width="600" height="600" patternUnits="userSpaceOnUse" patternTransform="rotate(-15)">
-                        {/* Dense, scratchy background lines */}
-                        <path d="M 0 50 L 50 100 L 100 50 L 150 100" stroke="rgba(0, 100, 255, 0.1)" strokeWidth="1" fill="none" />
-                        <path d="M 200 0 L 250 50 L 200 100 L 250 150" stroke="rgba(0, 100, 255, 0.1)" strokeWidth="1" fill="none" />
-                        <path d="M 0 300 L 600 300" stroke="rgba(0, 100, 255, 0.05)" strokeWidth="0.5" fill="none" />
+                    <filter id="smoke-noise">
+                        <feTurbulence type="turbulence" baseFrequency="0.01" numOctaves="5" result="turbulence">
+                            <animate attributeName="baseFrequency" values="0.01;0.012;0.01" dur="15s" repeatCount="indefinite" />
+                        </feTurbulence>
+                        <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" in="turbulence" result="smoke" />
+                        <feComposite in="smoke" in2="SourceGraphic" operator="in" />
+                    </filter>
 
-                        {/* "Shards" - broken geometric shapes */}
-                        <path d="M 50 200 L 100 200 L 120 250 L 30 250 Z" stroke="rgba(0, 150, 255, 0.15)" strokeWidth="1" fill="rgba(0, 100, 255, 0.05)" />
-                        <path d="M 300 400 L 320 380 L 350 400 L 330 420 Z" stroke="rgba(0, 150, 255, 0.15)" strokeWidth="1" fill="rgba(0, 100, 255, 0.05)" />
-
-                        {/* "Circuitry" Traces - erratic lines */}
-                        <path d="M 10 10 L 40 10 L 40 40 L 80 40" stroke="rgba(0, 200, 255, 0.2)" strokeWidth="1" fill="none" />
-                        <path d="M 400 500 L 400 450 L 450 450 L 450 400" stroke="rgba(0, 200, 255, 0.2)" strokeWidth="1" fill="none" />
-                        <path d="M 500 100 L 520 120 L 500 140" stroke="rgba(0, 200, 255, 0.2)" strokeWidth="1" fill="none" />
-                    </pattern>
-
-                    {/* GLOW: Electric Blue Bloom */}
-                    <filter id="electric-bloom">
-                        <feGaussianBlur stdDeviation="2" result="blur" />
+                    {/* FILTER 3: Heavy Bloom (The "Energy" Glow) */}
+                    <filter id="heavy-bloom" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="6" result="blur" />
                         <feMerge>
+                            <feMergeNode in="blur" />
                             <feMergeNode in="blur" />
                             <feMergeNode in="SourceGraphic" />
                         </feMerge>
                     </filter>
                 </defs>
-
-                {/* LAYER 1: The "Shattered" Background Pattern 
-                    The base layer of complex, broken tech geometry.
-                */}
-                <rect width="100%" height="100%" fill="url(#shattered-tech)" />
-
-                {/* LAYER 2: "Flowing Energy" Masked by "Dark Masses"
-                    This is the key to the "masses moving around" effect.
-                    We render the debris pattern again, BRIGHTER, but mask it with moving noise.
-                */}
-                <g filter="url(#shadow-flow)">
-                    <rect width="100%" height="100%" fill="url(#shattered-tech)" stroke="rgba(0, 255, 255, 0.5)" strokeWidth="2" />
-                    {/* Added extra distinct "currents" that get masked */}
-                    <path d="M -100 500 L 2000 500" stroke="#00FFFF" strokeWidth="2" strokeDasharray="100 1000">
-                        <animate attributeName="stroke-dashoffset" values="1100;0" dur="5s" repeatCount="indefinite" />
-                    </path>
-                </g>
             </svg>
 
-            {/* LAYER 3: "Active" Circuit Traces (Foreground)
-                 Bright, unmasked lines that zip across to show active power.
-            */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ filter: 'url(#electric-bloom)' }}>
-                <path d="M -100 200 L 200 200 L 250 250 L 1000 250" stroke="#00FFFF" strokeWidth="1.5" fill="none" opacity="0.6" strokeDasharray="100 1500">
-                    <animate attributeName="stroke-dashoffset" values="1600;0" dur="4s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite" />
-                </path>
+            {/* LAYER 1: The Murky Background (Fluid Smoke) */}
+            <div className="absolute inset-0 opacity-40 mix-blend-screen">
+                <svg width="100%" height="100%">
+                    <rect width="100%" height="100%" filter="url(#smoke-noise)" fill="#003366" opacity="0.5" />
+                </svg>
+            </div>
 
-                <path d="M 500 800 L 500 600 L 550 550 L 550 0" stroke="#0088FF" strokeWidth="1.5" fill="none" opacity="0.6" strokeDasharray="150 1200">
-                    <animate attributeName="stroke-dashoffset" values="1350;0" dur="6s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0;0.8;0" dur="6s" repeatCount="indefinite" />
-                </path>
-            </svg>
+            {/* LAYER 2: Ciphering "Data Lines" (Eroded Structures) */}
+            <div className="absolute inset-0 pointer-events-none" style={{ filter: "url(#electric-distortion)" }}>
+                <svg width="100%" height="100%">
+                    {/* Large "System" Arcs - Eroded */}
+                    <path
+                        d="M -100 200 Q 300 100 600 -100"
+                        stroke="rgba(0, 119, 255, 0.4)"
+                        strokeWidth="2"
+                        fill="none"
+                    />
+                    <path
+                        d="M -100 400 Q 400 300 800 -100"
+                        stroke="rgba(0, 119, 255, 0.3)"
+                        strokeWidth="3"
+                        fill="none"
+                    />
 
-            {/* LAYER 4: Deep Blue / Vignette Overlay 
-                Sets the "Deep Blue" tone of the whole screen.
-            */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#000510] via-transparent to-[#000a20] opacity-80" />
-            <div className="absolute inset-0 bg-[#001144] opacity-20 mix-blend-overlay" />
+                    {/* Vertical "Data Rain" Lines */}
+                    <line x1="85%" y1="0" x2="85%" y2="100%" stroke="rgba(0, 150, 255, 0.2)" strokeWidth="1" />
+                    <line x1="15%" y1="0" x2="15%" y2="100%" stroke="rgba(0, 150, 255, 0.2)" strokeWidth="1" />
+
+                    {/* Tech Decor */}
+                    <rect x="83%" y="15%" width="4%" height="10%" stroke="rgba(0, 180, 255, 0.3)" fill="none" />
+                    <rect x="13%" y="75%" width="4%" height="5%" stroke="rgba(0, 180, 255, 0.3)" fill="none" />
+                </svg>
+            </div>
+
+            {/* LAYER 3: Floating Data Particles (The "Ciphering Off" Effect) */}
+            <div
+                className="absolute inset-0 opacity-30"
+                style={{
+                    backgroundImage: 'radial-gradient(#00aaff 1px, transparent 1px)',
+                    backgroundSize: '30px 30px',
+                    maskImage: 'linear-gradient(to bottom, transparent, black, transparent)',
+                    animation: 'cipher-float 8s linear infinite'
+                }}
+            />
+
+            {/* LAYER 4: Deep Vignette (Central Focus) */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#02050c_90%)]" />
         </div>
     );
 }
