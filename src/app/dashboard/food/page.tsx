@@ -207,9 +207,9 @@ export default function Dashboard() {
             >
                 <div className="space-y-6">
 
-                    {/* Daily Stats Panel */}
-                    <div className="border border-white/20 bg-white/5 p-4 rounded">
-                        <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
+                    {/* Daily Stats Section */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-4 border-b border-white/20 pb-2">
                             <Flame className="w-4 h-4 text-orange-400" />
                             <h3 className="text-sm font-bold tracking-widest text-white">DAILY STATS</h3>
                         </div>
@@ -221,9 +221,9 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* Log Meal Panel */}
-                    <div className="border border-white/20 bg-white/5 p-4 rounded">
-                        <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
+                    {/* Log Meal Section */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-4 border-b border-white/20 pb-2">
                             <Plus className="w-4 h-4 text-cyan-400" />
                             <h3 className="text-sm font-bold tracking-widest text-white">LOG MEAL</h3>
                         </div>
@@ -319,8 +319,8 @@ export default function Dashboard() {
 
                     {/* Today's Meals */}
                     {meals.length > 0 && (
-                        <div className="border border-white/20 bg-white/5 p-4 rounded">
-                            <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
+                        <div>
+                            <div className="flex items-center gap-2 mb-4 border-b border-white/20 pb-2">
                                 <Apple className="w-4 h-4 text-green-400" />
                                 <h3 className="text-sm font-bold tracking-widest text-white">TODAY'S LOG</h3>
                             </div>
