@@ -195,7 +195,7 @@ export default function Dashboard() {
             <SystemPanelWithHeader
                 title="FUEL TRACKER"
                 icon={Utensils}
-                className="min-h-full"
+                className="h-full"
                 backButton={
                     <button
                         onClick={() => router.push('/dashboard')}

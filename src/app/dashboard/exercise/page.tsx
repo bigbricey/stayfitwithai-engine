@@ -12,7 +12,7 @@ export default function ExercisePage() {
             <SystemPanelWithHeader
                 title="EXERCISE TRACKER"
                 icon={Dumbbell}
-                className="min-h-full"
+                className="h-full"
                 backButton={
                     <button
                         onClick={() => router.push('/dashboard')}

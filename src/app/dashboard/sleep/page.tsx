@@ -12,7 +12,7 @@ export default function SleepPage() {
             <SystemPanelWithHeader
                 title="SLEEP TRACKER"
                 icon={Moon}
-                className="min-h-full"
+                className="h-full"
                 backButton={
                     <button
                         onClick={() => router.push('/dashboard')}

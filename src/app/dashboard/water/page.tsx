@@ -12,7 +12,7 @@ export default function WaterPage() {
             <SystemPanelWithHeader
                 title="HYDRATION TRACKER"
                 icon={Droplet}
-                className="min-h-full"
+                className="h-full"
                 backButton={
                     <button
                         onClick={() => router.push('/dashboard')}

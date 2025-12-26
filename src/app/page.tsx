@@ -22,7 +22,7 @@ export default function WelcomePage() {
       <div className={`transition-all duration-700 h-full ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
 
         {/* Main Welcome Panel */}
-        <SystemPanelWithHeader title="SYSTEM NOTIFICATION" icon={Sparkles} className="min-h-full">
+        <SystemPanelWithHeader title="SYSTEM NOTIFICATION" icon={Sparkles} className="h-full">
           <div className="text-center py-8">
             <p className="text-white text-lg mb-2 font-medium">Welcome to</p>
             <h1

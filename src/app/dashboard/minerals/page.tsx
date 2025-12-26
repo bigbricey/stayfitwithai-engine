@@ -12,7 +12,7 @@ export default function MineralsPage() {
             <SystemPanelWithHeader
                 title="MINERAL STACK"
                 icon={Gem}
-                className="min-h-full"
+                className="h-full"
                 backButton={
                     <button
                         onClick={() => router.push('/dashboard')}
