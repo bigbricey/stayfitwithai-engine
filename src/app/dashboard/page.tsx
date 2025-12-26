@@ -111,45 +111,41 @@ export default function GameHub() {
                                         onClick={() => !mod.locked && router.push(mod.path)}
                                         disabled={mod.locked}
                                         className={`group relative h-32 w-full text-left transition-all duration-300 transform
-                                            ${mod.locked ? 'opacity-80 grayscale-[0.5]' : 'hover:-translate-y-1 hover:scale-[1.02] hover:shadow-[0_0_15px_rgba(0,212,255,0.15)]'}
+                                            ${mod.locked ? 'opacity-100' : 'hover:-translate-y-1 hover:scale-[1.02] hover:shadow-[0_0_15px_rgba(0,212,255,0.15)]'}
                                         `}
                                     >
                                         <SystemPanel className={`h-full flex flex-col items-center justify-center border overflow-hidden relative transition-all duration-300
                                             ${mod.locked
-                                                ? 'border-white/20 bg-black/40'
+                                                ? 'border-white/10 bg-black/40' // Same base as active
                                                 : 'border-white/10 bg-black/40 group-hover:border-cyan-400/50 group-hover:bg-cyan-900/20'
                                             }
                                         `}>
-                                            {/* Holographic Scanline */}
-                                            {!mod.locked && (
-                                                <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(transparent_50%,rgba(0,255,255,0.2)_50%)] bg-[length:100%_4px] pointer-events-none"></div>
-                                            )}
+                                            {/* Holographic Scanline - Show for all to maintain look */}
+                                            <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(transparent_50%,rgba(0,255,255,0.2)_50%)] bg-[length:100%_4px] pointer-events-none"></div>
 
                                             {/* Icon */}
                                             <div className={`mb-3 p-2 rounded-full border backdrop-blur-[1px] transition-colors duration-300
-                                                ${mod.locked ? 'border-white/10 bg-white/10' : 'border-white/10 bg-white/5 group-hover:border-cyan-400/30 group-hover:bg-cyan-400/10'}
+                                                ${mod.locked ? 'border-white/10 bg-white/5' : 'border-white/10 bg-white/5 group-hover:border-cyan-400/30 group-hover:bg-cyan-400/10'}
                                             `}>
-                                                <mod.icon className={`w-5 h-5 ${mod.locked ? 'text-white/40' : mod.color}`} />
+                                                {/* Use the module color even if locked */}
+                                                <mod.icon className={`w-5 h-5 ${mod.color}`} />
                                             </div>
 
                                             {/* Text */}
                                             <div className="text-center">
-                                                <h3 className={`text-sm font-bold tracking-widest uppercase mb-0.5 transition-colors duration-300
-                                                    ${mod.locked ? 'text-white/90' : 'text-white/90 group-hover:text-cyan-100'}
-                                                `}>
+                                                <h3 className={`text-sm font-bold tracking-widest uppercase mb-0.5 transition-colors duration-300 text-white/90 group-hover:text-cyan-100`}>
                                                     {mod.title}
                                                 </h3>
-                                                <p className={`text-[9px] font-mono tracking-[0.1em] uppercase hidden sm:block
-                                                    ${mod.locked ? 'text-white/70' : 'text-white/50'}
-                                                `}>
+                                                <p className="text-[9px] font-mono text-white/50 tracking-[0.1em] uppercase hidden sm:block">
                                                     {mod.subtitle}
                                                 </p>
                                             </div>
 
-                                            {/* Lock Icon Overlay - subtle */}
+                                            {/* Lock Icon Overlay - Keep it but make it distinct */}
                                             {mod.locked && (
-                                                <div className="absolute top-2 right-2">
-                                                    <Lock className="w-3 h-3 text-white/40" />
+                                                <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/40 px-1.5 py-0.5 rounded text-[9px] text-white/40 border border-white/5">
+                                                    <Lock className="w-2.5 h-2.5" />
+                                                    <span>LOCKED</span>
                                                 </div>
                                             )}
 
