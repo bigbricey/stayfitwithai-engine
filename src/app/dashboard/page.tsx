@@ -56,7 +56,7 @@ function AnimatedStat({ value, icon: Icon, label, color }: {
             <div className="font-bold text-white text-4xl" style={{ textShadow: '0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(100,200,255,0.6)' }}>
                 <AnimatedNumber value={value} duration={600} />
             </div>
-            <p className="text-white/50 text-xs mt-1 tracking-wider">{label}</p>
+            <p className="text-white text-xs mt-1 tracking-wider font-medium" style={{ textShadow: '0 0 8px rgba(255,255,255,0.4)' }}>{label}</p>
         </div>
     );
 }
@@ -234,12 +234,13 @@ export default function Dashboard() {
                                 key={type.id}
                                 onClick={() => setSelectedType(type.id)}
                                 className={`py-3 border text-center transition-all duration-150 active:scale-95 ${selectedType === type.id
-                                    ? 'border-white/80 bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]'
-                                    : 'border-white/20 text-white/50 hover:border-white/40 hover:text-white/80'
+                                    ? 'border-white bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.2)]'
+                                    : 'border-white/40 text-white/80 hover:border-white/60 hover:text-white'
                                     }`}
+                                style={{ textShadow: selectedType === type.id ? '0 0 10px rgba(255,255,255,0.5)' : '0 0 5px rgba(255,255,255,0.3)' }}
                             >
-                                <type.icon className="w-5 h-5 mx-auto mb-1" />
-                                <span className="text-xs tracking-wider uppercase">{type.label}</span>
+                                <type.icon className="w-5 h-5 mx-auto mb-1" style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.5))' }} />
+                                <span className="text-xs tracking-wider uppercase font-medium">{type.label}</span>
                             </button>
                         ))}
                     </div>
@@ -247,7 +248,7 @@ export default function Dashboard() {
                     {/* Input Fields */}
                     <div className="space-y-4">
                         <div>
-                            <label className="text-white/50 text-xs tracking-wider uppercase mb-2 block">Meal Name (optional)</label>
+                            <label className="text-white text-xs tracking-wider uppercase mb-2 block font-medium" style={{ textShadow: '0 0 8px rgba(255,255,255,0.4)' }}>Meal Name (optional)</label>
                             <input
                                 type="text"
                                 value={mealName}
@@ -260,7 +261,7 @@ export default function Dashboard() {
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
-                                <label className="text-white/50 text-xs tracking-wider uppercase mb-2 block">Calories</label>
+                                <label className="text-white text-xs tracking-wider uppercase mb-2 block font-medium" style={{ textShadow: '0 0 8px rgba(255,255,255,0.4)' }}>Calories</label>
                                 <input
                                     type="number"
                                     value={calories}
@@ -272,7 +273,7 @@ export default function Dashboard() {
                                 />
                             </div>
                             <div>
-                                <label className="text-white/50 text-xs tracking-wider uppercase mb-2 block">Protein (g)</label>
+                                <label className="text-white text-xs tracking-wider uppercase mb-2 block font-medium" style={{ textShadow: '0 0 8px rgba(255,255,255,0.4)' }}>Protein (g)</label>
                                 <input
                                     type="number"
                                     value={protein}
@@ -283,7 +284,7 @@ export default function Dashboard() {
                                 />
                             </div>
                             <div>
-                                <label className="text-white/50 text-xs tracking-wider uppercase mb-2 block">Carbs (g)</label>
+                                <label className="text-white text-xs tracking-wider uppercase mb-2 block font-medium" style={{ textShadow: '0 0 8px rgba(255,255,255,0.4)' }}>Carbs (g)</label>
                                 <input
                                     type="number"
                                     value={carbs}
@@ -294,7 +295,7 @@ export default function Dashboard() {
                                 />
                             </div>
                             <div>
-                                <label className="text-white/50 text-xs tracking-wider uppercase mb-2 block">Fat (g)</label>
+                                <label className="text-white text-xs tracking-wider uppercase mb-2 block font-medium" style={{ textShadow: '0 0 8px rgba(255,255,255,0.4)' }}>Fat (g)</label>
                                 <input
                                     type="number"
                                     value={fat}
@@ -323,14 +324,14 @@ export default function Dashboard() {
                                 <div key={meal.id} className="flex items-center justify-between border-b border-white/10 pb-3 
                                     hover:bg-white/5 -mx-2 px-2 transition-colors">
                                     <div>
-                                        <p className="text-white font-medium">{meal.name}</p>
-                                        <p className="text-white/40 text-xs uppercase tracking-wider">{meal.meal_type}</p>
+                                        <p className="text-white font-bold" style={{ textShadow: '0 0 8px rgba(255,255,255,0.5)' }}>{meal.name}</p>
+                                        <p className="text-white/80 text-xs uppercase tracking-wider font-medium" style={{ textShadow: '0 0 5px rgba(255,255,255,0.3)' }}>{meal.meal_type}</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-white font-bold" style={{ textShadow: '0 0 8px rgba(255,255,255,0.5)' }}>
                                             {meal.calories} cal
                                         </p>
-                                        <p className="text-white/40 text-xs">
+                                        <p className="text-white/90 text-xs font-medium" style={{ textShadow: '0 0 5px rgba(255,255,255,0.3)' }}>
                                             P:{meal.protein}g C:{meal.carbs}g F:{meal.fat}g
                                         </p>
                                     </div>
@@ -340,7 +341,7 @@ export default function Dashboard() {
                     </SystemPanelWithHeader>
                 )}
 
-                <p className="text-center text-white/30 text-xs tracking-[0.3em] py-4">
+                <p className="text-center text-white text-xs tracking-[0.3em] py-4 font-medium" style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>
                     [ NUTRITION SYSTEM ONLINE ]
                 </p>
             </div>

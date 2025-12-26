@@ -62,10 +62,10 @@ export function SystemPanelWithHeader({ title, icon: Icon, children, className =
             <div className="relative">
                 {/* Header */}
                 <div className="flex items-center gap-3 px-4 py-3 border-b border-white/20">
-                    <div className="w-6 h-6 rounded-full border border-white/60 flex items-center justify-center">
-                        <IconComponent className="w-3 h-3 text-white" />
+                    <div className="w-6 h-6 rounded-full border border-white flex items-center justify-center" style={{ boxShadow: '0 0 10px rgba(255,255,255,0.3)' }}>
+                        <IconComponent className="w-3 h-3 text-white" style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.5))' }} />
                     </div>
-                    <span className="text-white/80 text-sm tracking-[0.2em] uppercase font-medium">
+                    <span className="text-white text-sm tracking-[0.2em] uppercase font-bold" style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>
                         {title}
                     </span>
                 </div>
@@ -118,10 +118,10 @@ export function VitalBar({ icon: Icon, label, current, max, color }: {
     return (
         <div className="flex items-center gap-3">
             <div className="flex flex-col items-center min-w-[40px]">
-                <div className="w-8 h-8 rounded-full border border-white/60 flex items-center justify-center">
-                    <Icon className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-full border border-white flex items-center justify-center" style={{ boxShadow: '0 0 8px rgba(255,255,255,0.3)' }}>
+                    <Icon className="w-4 h-4 text-white" style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.5))' }} />
                 </div>
-                <span className="text-white/80 text-xs mt-1">{label}</span>
+                <span className="text-white text-xs mt-1 font-medium" style={{ textShadow: '0 0 8px rgba(255,255,255,0.4)' }}>{label}</span>
             </div>
             <div className="flex-1">
                 <div className="h-3 bg-slate-800/50 border border-white/20">
@@ -130,7 +130,7 @@ export function VitalBar({ icon: Icon, label, current, max, color }: {
                         style={{ width: `${percent}%`, boxShadow: `0 0 10px ${colorMap[color].shadow}` }}
                     />
                 </div>
-                <p className="text-white/60 text-xs text-right mt-1">{current}<span className="text-white/40">/{max}</span></p>
+                <p className="text-white text-xs text-right mt-1 font-bold" style={{ textShadow: '0 0 8px rgba(255,255,255,0.5)' }}>{current}<span className="text-white/80">/{max}</span></p>
             </div>
         </div>
     );

@@ -10,7 +10,7 @@ function StatRow({ icon: Icon, label, value }: { icon: React.ElementType; label:
     return (
         <div className="flex items-center gap-3">
             <Icon className="w-5 h-5 text-white" style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.5))' }} />
-            <span className="text-white/70 text-sm">{label}:</span>
+            <span className="text-white text-sm font-medium" style={{ textShadow: '0 0 8px rgba(255,255,255,0.4)' }}>{label}:</span>
             <GlowNumber value={value} size="lg" />
         </div>
     );
@@ -50,18 +50,18 @@ export default function CharacterPage() {
                             {/* Level Number */}
                             <div className="text-center">
                                 <GlowNumber value="1" size="xl" />
-                                <p className="text-white/60 text-sm tracking-[0.3em] uppercase mt-1">LEVEL</p>
+                                <p className="text-white text-sm tracking-[0.3em] uppercase mt-1 font-medium" style={{ textShadow: '0 0 8px rgba(255,255,255,0.4)' }}>LEVEL</p>
                             </div>
 
                             {/* Job & Title */}
                             <div className="pb-4 text-left">
-                                <p className="text-white/70 text-sm">
-                                    <span className="text-white/50">JOB:</span>{' '}
-                                    <span className="text-white font-semibold">Beginner</span>
+                                <p className="text-white text-sm" style={{ textShadow: '0 0 5px rgba(255,255,255,0.3)' }}>
+                                    <span className="text-white/80">JOB:</span>{' '}
+                                    <span className="text-white font-bold" style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>Beginner</span>
                                 </p>
-                                <p className="text-white/70 text-sm">
-                                    <span className="text-white/50">TITLE:</span>{' '}
-                                    <span className="text-white font-semibold">Fitness Hunter</span>
+                                <p className="text-white text-sm" style={{ textShadow: '0 0 5px rgba(255,255,255,0.3)' }}>
+                                    <span className="text-white/80">TITLE:</span>{' '}
+                                    <span className="text-white font-bold" style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>Fitness Hunter</span>
                                 </p>
                             </div>
                         </div>
@@ -72,10 +72,10 @@ export default function CharacterPage() {
                                 <VitalBar icon={Plus} label="HP" current={100} max={100} color="green" />
                                 <VitalBar icon={Zap} label="XP" current={0} max={100} color="blue" />
                                 <div className="flex items-center justify-end gap-2">
-                                    <div className="w-8 h-8 rounded-full border border-white/60 flex items-center justify-center">
-                                        <div className="w-4 h-4 border-2 border-white/80 rounded-full border-t-transparent animate-spin" style={{ animationDuration: '3s' }} />
+                                    <div className="w-8 h-8 rounded-full border border-white flex items-center justify-center" style={{ boxShadow: '0 0 8px rgba(255,255,255,0.3)' }}>
+                                        <div className="w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin" style={{ animationDuration: '3s' }} />
                                     </div>
-                                    <span className="text-white/70 text-sm">FATIGUE:</span>
+                                    <span className="text-white text-sm font-medium" style={{ textShadow: '0 0 8px rgba(255,255,255,0.4)' }}>FATIGUE:</span>
                                     <GlowNumber value="0" size="sm" />
                                 </div>
                             </div>
@@ -96,8 +96,8 @@ export default function CharacterPage() {
                                 {/* Ability Points - Bottom Right */}
                                 <div className="flex items-center justify-end gap-3">
                                     <div className="text-right">
-                                        <p className="text-white/50 text-xs">Available</p>
-                                        <p className="text-white/50 text-xs">Ability Points:</p>
+                                        <p className="text-white text-xs font-medium" style={{ textShadow: '0 0 5px rgba(255,255,255,0.3)' }}>Available</p>
+                                        <p className="text-white text-xs font-medium" style={{ textShadow: '0 0 5px rgba(255,255,255,0.3)' }}>Ability Points:</p>
                                     </div>
                                     <GlowNumber value="0" size="lg" />
                                 </div>
@@ -116,7 +116,7 @@ export default function CharacterPage() {
                             <ChevronRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
                         </button>
 
-                        <p className="text-center text-white/30 text-xs mt-4 tracking-[0.3em]">
+                        <p className="text-center text-white text-xs mt-4 tracking-[0.3em] font-medium" style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>
                             [ CHARACTER STATUS ]
                         </p>
                     </div>
