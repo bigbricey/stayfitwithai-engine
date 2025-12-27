@@ -9,7 +9,7 @@ import {
 } from '@/components/SoloLeveling';
 import { NotificationManager } from '@/components/SoloLeveling/SystemNotification';
 import { XPPopup } from '@/components/SoloLeveling/XPPopup';
-import { ArrowLeft, Coffee, Sun, Moon, Cookie, Search, Loader2, ChevronDown, Check } from 'lucide-react';
+import { ArrowLeft, Coffee, Sun, Moon, Cookie, Search, Loader2 } from 'lucide-react';
 import { saveMeal } from '@/lib/actions/meals';
 
 const MEAL_ICONS: Record<string, any> = {
@@ -54,9 +54,7 @@ export default function MealEntryPage() {
 
     // Selected Food State
     const [selectedFood, setSelectedFood] = useState<NutritionResult | null>(null);
-    const [quantity, setQuantity] = useState('1');
-    const [selectedServing, setSelectedServing] = useState<ServingOption | null>(null);
-    const [showServingDropdown, setShowServingDropdown] = useState(false);
+    const [gramAmount, setGramAmount] = useState('100');
 
     // Feedback State
     const [notifications, setNotifications] = useState<{ id: string; message: string; type?: 'info' | 'success' | 'warning' }[]>([]);
@@ -69,15 +67,14 @@ export default function MealEntryPage() {
         }
     }, [mealType, router]);
 
-    // Calculate nutrition based on quantity and serving
+    // Calculate nutrition based on gram amount (direct calculation)
     const calculatedNutrition = useMemo(() => {
-        if (!selectedFood || !selectedServing) {
+        if (!selectedFood) {
             return { calories: 0, protein: 0, carbs: 0, fat: 0 };
         }
 
-        const qty = parseFloat(quantity) || 0;
-        const totalGrams = qty * selectedServing.grams;
-        const multiplier = totalGrams / 100;
+        const grams = parseFloat(gramAmount) || 0;
+        const multiplier = grams / 100;
 
         return {
             calories: Math.round(selectedFood.calories * multiplier),
@@ -85,7 +82,7 @@ export default function MealEntryPage() {
             carbs: Math.round(selectedFood.carbs * multiplier),
             fat: Math.round(selectedFood.fat * multiplier),
         };
-    }, [selectedFood, selectedServing, quantity]);
+    }, [selectedFood, gramAmount]);
 
     // Debounced nutrition search
     useEffect(() => {
@@ -128,19 +125,9 @@ export default function MealEntryPage() {
         setSelectedFood(food);
         setSearchQuery(food.name);
         setShowResults(false);
+        setGramAmount('100'); // Default to 100g
 
-        // Set default serving option (prefer 100g or first option)
-        const defaultServing = food.servingOptions.find(o => o.label === '100 g')
-            || food.servingOptions[0];
-        setSelectedServing(defaultServing);
-        setQuantity('1');
-
-        showNotification('FOOD SELECTED - ADJUST SERVING', 'info');
-    };
-
-    const selectServing = (option: ServingOption) => {
-        setSelectedServing(option);
-        setShowServingDropdown(false);
+        showNotification('FOOD SELECTED - ENTER GRAMS', 'info');
     };
 
     const showNotification = (message: string, type: 'success' | 'info' | 'warning' = 'success') => {
@@ -154,7 +141,7 @@ export default function MealEntryPage() {
     };
 
     const handleSubmit = async () => {
-        if (!selectedFood || !selectedServing || calculatedNutrition.calories === 0) return;
+        if (!selectedFood || calculatedNutrition.calories === 0) return;
 
         setIsPending(true);
         const xpGain = Math.floor(calculatedNutrition.calories / 20) + 10;
@@ -185,8 +172,7 @@ export default function MealEntryPage() {
     const clearSelection = () => {
         setSelectedFood(null);
         setSearchQuery('');
-        setSelectedServing(null);
-        setQuantity('1');
+        setGramAmount('100');
     };
 
     if (!mounted) return null;
@@ -291,66 +277,56 @@ export default function MealEntryPage() {
                                 </button>
                             </div>
 
-                            {/* Quantity + Serving Selector */}
-                            <div className="grid grid-cols-2 gap-4">
-                                {/* Quantity Input */}
-                                <div>
-                                    <label className="text-white/60 text-[10px] tracking-wider uppercase block mb-2">
-                                        QUANTITY
-                                    </label>
-                                    <input
-                                        type="number"
-                                        step="0.25"
-                                        min="0.25"
-                                        value={quantity}
-                                        onChange={(e) => setQuantity(e.target.value)}
-                                        className="w-full bg-black/60 border border-white/30 text-white text-center text-2xl font-bold px-4 py-3
-                                            focus:border-cyan-400 focus:outline-none transition-all"
-                                    />
-                                </div>
+                            {/* Gram Input - Direct Entry */}
+                            <div>
+                                <label className="text-white/60 text-[10px] tracking-wider uppercase block mb-2">
+                                    AMOUNT (GRAMS)
+                                </label>
+                                <input
+                                    type="number"
+                                    step="1"
+                                    min="1"
+                                    value={gramAmount}
+                                    onChange={(e) => setGramAmount(e.target.value)}
+                                    placeholder="Enter grams"
+                                    className="w-full bg-black/60 border border-white/30 text-white text-center text-3xl font-bold px-4 py-4
+                                        focus:border-cyan-400 focus:outline-none transition-all"
+                                />
+                            </div>
 
-                                {/* Serving Dropdown */}
-                                <div className="relative">
-                                    <label className="text-white/60 text-[10px] tracking-wider uppercase block mb-2">
-                                        SERVING SIZE
-                                    </label>
-                                    <button
-                                        onClick={() => setShowServingDropdown(!showServingDropdown)}
-                                        className="w-full bg-black/60 border border-white/30 text-white px-4 py-3 text-left
-                                            focus:border-cyan-400 focus:outline-none transition-all flex items-center justify-between"
-                                    >
-                                        <span className="truncate text-lg">
-                                            {selectedServing?.label || 'Select...'}
-                                        </span>
-                                        <ChevronDown className={`w-5 h-5 text-white/60 transition-transform ${showServingDropdown ? 'rotate-180' : ''}`} />
-                                    </button>
-
-                                    {showServingDropdown && (
-                                        <div className="absolute z-50 w-full mt-1 bg-black/95 border border-cyan-400/50 max-h-48 overflow-y-auto">
-                                            {selectedFood.servingOptions.map((option, idx) => (
-                                                <button
-                                                    key={idx}
-                                                    onClick={() => selectServing(option)}
-                                                    className="w-full px-4 py-3 text-left hover:bg-cyan-400/20 border-b border-white/10 last:border-0 transition-colors flex items-center justify-between"
-                                                >
-                                                    <span className="text-white">{option.label}</span>
-                                                    {selectedServing?.label === option.label && (
-                                                        <Check className="w-4 h-4 text-cyan-400" />
-                                                    )}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
+                            {/* Quick Fill Buttons */}
+                            <div>
+                                <label className="text-white/60 text-[10px] tracking-wider uppercase block mb-2">
+                                    QUICK FILL
+                                </label>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {[
+                                        { label: '100g', grams: 100 },
+                                        { label: '200g', grams: 200 },
+                                        { label: '1 oz', grams: 28 },
+                                        { label: '½ lb', grams: 227 },
+                                    ].map((option) => (
+                                        <button
+                                            key={option.label}
+                                            onClick={() => setGramAmount(option.grams.toString())}
+                                            className={`px-2 py-2 text-xs border transition-all
+                                                ${parseFloat(gramAmount) === option.grams
+                                                    ? 'border-cyan-400 bg-cyan-400/20 text-cyan-400'
+                                                    : 'border-white/20 text-white/60 hover:border-white/40 hover:text-white'}`}
+                                        >
+                                            {option.label}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         </div>
                     )}
 
                     {/* Calculated Macros Display */}
-                    {selectedFood && selectedServing && (
+                    {selectedFood && (
                         <div className="border border-white/10 bg-black/30 p-4">
                             <div className="text-center text-white/40 text-xs tracking-wider mb-3">
-                                NUTRITION FOR {quantity} × {selectedServing.label}
+                                NUTRITION FOR {gramAmount}g
                             </div>
                             <div className="grid grid-cols-4 gap-3">
                                 <div className="text-center">
@@ -384,7 +360,7 @@ export default function MealEntryPage() {
                     <div className="pt-4">
                         <SystemButton
                             onClick={handleSubmit}
-                            disabled={isPending || !selectedFood || !selectedServing || calculatedNutrition.calories === 0}
+                            disabled={isPending || !selectedFood || calculatedNutrition.calories === 0}
                             className={(!selectedFood || calculatedNutrition.calories === 0)
                                 ? "opacity-50 grayscale"
                                 : "border-cyan-400 text-cyan-400"}
