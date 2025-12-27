@@ -1,16 +1,7 @@
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-// AUTH DISABLED FOR PERSONAL USE
-// To re-enable: uncomment Supabase imports and auth checks below
-
 export async function middleware(request: NextRequest) {
-    // All routes are public for now
-    return NextResponse.next();
-
-    /* 
-    // PRESERVED FOR FUTURE AUTH RE-ENABLEMENT
-    import { createServerClient, type CookieOptions } from '@supabase/ssr';
-    
     let supabaseResponse = NextResponse.next({ request });
 
     const supabase = createServerClient(
@@ -31,9 +22,16 @@ export async function middleware(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser();
 
-    const protectedPaths = ['/', '/dashboard'];
+    // Protected routes - require login
+    const protectedPaths = ['/dashboard'];
     const isProtectedPath = protectedPaths.some(path =>
-        request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith('/dashboard')
+        request.nextUrl.pathname.startsWith(path)
+    );
+
+    // Auth pages - redirect to dashboard if already logged in
+    const authPaths = ['/login', '/signup'];
+    const isAuthPath = authPaths.some(path =>
+        request.nextUrl.pathname === path
     );
 
     if (isProtectedPath && !user) {
@@ -42,13 +40,17 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(url);
     }
 
+    if (isAuthPath && user) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/dashboard';
+        return NextResponse.redirect(url);
+    }
+
     return supabaseResponse;
-    */
 }
 
 export const config = {
     matcher: [
-        '/((?!_next/static|_next/image|favicon.ico|auth/callback|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+        '/((?!_next/static|_next/image|favicon.ico|auth/callback|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 };
-
