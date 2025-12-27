@@ -3,24 +3,50 @@ import { NextRequest, NextResponse } from 'next/server';
 const USDA_API_KEY = process.env.USDA_API_KEY;
 const USDA_BASE_URL = 'https://api.nal.usda.gov/fdc/v1';
 
+interface USDAFoodNutrient {
+    nutrientId: number;
+    nutrientName: string;
+    value: number;
+    unitName: string;
+}
+
+interface USDAFoodMeasure {
+    disseminationText?: string;
+    gramWeight: number;
+    measureUnitName?: string;
+    modifier?: string;
+}
+
 interface USDAFood {
     fdcId: number;
     description: string;
-    foodNutrients: {
-        nutrientId: number;
-        nutrientName: string;
-        value: number;
-        unitName: string;
-    }[];
+    dataType?: string;
+    brandName?: string;
+    brandOwner?: string;
+    servingSize?: number;
+    servingSizeUnit?: string;
+    householdServingFullText?: string;
+    foodNutrients: USDAFoodNutrient[];
+    foodMeasures?: USDAFoodMeasure[];
+}
+
+interface ServingOption {
+    label: string;
+    grams: number;
 }
 
 interface NutritionResult {
     name: string;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
+    calories: number;      // per 100g
+    protein: number;       // per 100g
+    carbs: number;         // per 100g
+    fat: number;           // per 100g
     fdcId: number;
+    servingSize: number;
+    servingSizeUnit: string;
+    householdServing: string;
+    servingOptions: ServingOption[];
+    brandName?: string;
 }
 
 // Nutrient IDs from USDA
@@ -31,6 +57,64 @@ const NUTRIENT_IDS = {
     FAT: 1004,          // Total lipid/fat (g)
 };
 
+// Default serving options when USDA doesn't provide measures
+const DEFAULT_SERVING_OPTIONS: ServingOption[] = [
+    { label: '1 g', grams: 1 },
+    { label: '1 oz', grams: 28.35 },
+    { label: '100 g', grams: 100 },
+    { label: '1 lb', grams: 453.6 },
+];
+
+function extractServingOptions(food: USDAFood): ServingOption[] {
+    const options: ServingOption[] = [];
+
+    // Add USDA-provided measures if available
+    if (food.foodMeasures && food.foodMeasures.length > 0) {
+        for (const measure of food.foodMeasures) {
+            if (measure.gramWeight > 0) {
+                const label = measure.disseminationText ||
+                    measure.modifier ||
+                    measure.measureUnitName ||
+                    `${Math.round(measure.gramWeight)}g`;
+                options.push({
+                    label: label,
+                    grams: measure.gramWeight,
+                });
+            }
+        }
+    }
+
+    // Add default serving if USDA provides it
+    if (food.servingSize && food.servingSizeUnit) {
+        const servingLabel = food.householdServingFullText ||
+            `1 serving (${food.servingSize}${food.servingSizeUnit})`;
+
+        // Avoid duplicates
+        if (!options.find(o => Math.abs(o.grams - food.servingSize!) < 0.1)) {
+            options.unshift({
+                label: servingLabel,
+                grams: food.servingSize,
+            });
+        }
+    }
+
+    // Always include standard units
+    const standardUnits = [
+        { label: '1 g', grams: 1 },
+        { label: '1 oz', grams: 28.35 },
+        { label: '100 g', grams: 100 },
+    ];
+
+    for (const unit of standardUnits) {
+        if (!options.find(o => o.label === unit.label)) {
+            options.push(unit);
+        }
+    }
+
+    // Sort by gram weight
+    return options.sort((a, b) => a.grams - b.grams);
+}
+
 function extractNutrients(food: USDAFood): NutritionResult {
     const nutrients = food.foodNutrients || [];
 
@@ -39,13 +123,25 @@ function extractNutrients(food: USDAFood): NutritionResult {
         return nutrient?.value ?? 0;
     };
 
+    const servingOptions = extractServingOptions(food);
+
+    // Determine default serving
+    const defaultServing = food.servingSize || 100;
+    const defaultUnit = food.servingSizeUnit || 'g';
+    const householdServing = food.householdServingFullText || `${defaultServing}${defaultUnit}`;
+
     return {
         name: food.description,
-        calories: Math.round(findNutrient(NUTRIENT_IDS.ENERGY)),
-        protein: Math.round(findNutrient(NUTRIENT_IDS.PROTEIN)),
-        carbs: Math.round(findNutrient(NUTRIENT_IDS.CARBS)),
-        fat: Math.round(findNutrient(NUTRIENT_IDS.FAT)),
+        calories: findNutrient(NUTRIENT_IDS.ENERGY),      // Keep decimals for calculation accuracy
+        protein: findNutrient(NUTRIENT_IDS.PROTEIN),
+        carbs: findNutrient(NUTRIENT_IDS.CARBS),
+        fat: findNutrient(NUTRIENT_IDS.FAT),
         fdcId: food.fdcId,
+        servingSize: defaultServing,
+        servingSizeUnit: defaultUnit,
+        householdServing: householdServing,
+        servingOptions: servingOptions,
+        brandName: food.brandName || food.brandOwner,
     };
 }
 
@@ -70,7 +166,7 @@ export async function GET(request: NextRequest) {
 
     try {
         const response = await fetch(
-            `${USDA_BASE_URL}/foods/search?api_key=${USDA_API_KEY}&query=${encodeURIComponent(query)}&pageSize=10`,
+            `${USDA_BASE_URL}/foods/search?api_key=${USDA_API_KEY}&query=${encodeURIComponent(query)}&pageSize=15`,
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -86,7 +182,7 @@ export async function GET(request: NextRequest) {
         const data = await response.json();
         const foods: USDAFood[] = data.foods || [];
 
-        // Extract nutrition from first 10 results
+        // Extract nutrition from results
         const results: NutritionResult[] = foods
             .slice(0, 10)
             .map(extractNutrients);

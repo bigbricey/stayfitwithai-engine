@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
     SoloLevelingPage,
@@ -9,7 +9,7 @@ import {
 } from '@/components/SoloLeveling';
 import { NotificationManager } from '@/components/SoloLeveling/SystemNotification';
 import { XPPopup } from '@/components/SoloLeveling/XPPopup';
-import { ArrowLeft, Coffee, Sun, Moon, Cookie, Plus, Search, Loader2 } from 'lucide-react';
+import { ArrowLeft, Coffee, Sun, Moon, Cookie, Search, Loader2, ChevronDown, Check } from 'lucide-react';
 import { saveMeal } from '@/lib/actions/meals';
 
 const MEAL_ICONS: Record<string, any> = {
@@ -19,6 +19,11 @@ const MEAL_ICONS: Record<string, any> = {
     snack: Cookie
 };
 
+interface ServingOption {
+    label: string;
+    grams: number;
+}
+
 interface NutritionResult {
     name: string;
     calories: number;
@@ -26,17 +31,11 @@ interface NutritionResult {
     carbs: number;
     fat: number;
     fdcId: number;
-}
-
-interface Meal {
-    id: string;
-    name: string;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    meal_type: string;
-    created_at: string;
+    servingSize: number;
+    servingSizeUnit: string;
+    householdServing: string;
+    servingOptions: ServingOption[];
+    brandName?: string;
 }
 
 export default function MealEntryPage() {
@@ -48,16 +47,16 @@ export default function MealEntryPage() {
     const [isPending, setIsPending] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
 
-    // Form State
-    const [mealName, setMealName] = useState('');
-    const [calories, setCalories] = useState('');
-    const [protein, setProtein] = useState('');
-    const [carbs, setCarbs] = useState('');
-    const [fat, setFat] = useState('');
-
-    // Search Results
+    // Search State
+    const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<NutritionResult[]>([]);
     const [showResults, setShowResults] = useState(false);
+
+    // Selected Food State
+    const [selectedFood, setSelectedFood] = useState<NutritionResult | null>(null);
+    const [quantity, setQuantity] = useState('1');
+    const [selectedServing, setSelectedServing] = useState<ServingOption | null>(null);
+    const [showServingDropdown, setShowServingDropdown] = useState(false);
 
     // Feedback State
     const [notifications, setNotifications] = useState<{ id: string; message: string; type?: 'info' | 'success' | 'warning' }[]>([]);
@@ -65,15 +64,32 @@ export default function MealEntryPage() {
 
     useEffect(() => {
         setMounted(true);
-        // Validate meal type
         if (!['breakfast', 'lunch', 'dinner', 'snack'].includes(mealType)) {
             router.push('/dashboard/food');
         }
     }, [mealType, router]);
 
+    // Calculate nutrition based on quantity and serving
+    const calculatedNutrition = useMemo(() => {
+        if (!selectedFood || !selectedServing) {
+            return { calories: 0, protein: 0, carbs: 0, fat: 0 };
+        }
+
+        const qty = parseFloat(quantity) || 0;
+        const totalGrams = qty * selectedServing.grams;
+        const multiplier = totalGrams / 100;
+
+        return {
+            calories: Math.round(selectedFood.calories * multiplier),
+            protein: Math.round(selectedFood.protein * multiplier),
+            carbs: Math.round(selectedFood.carbs * multiplier),
+            fat: Math.round(selectedFood.fat * multiplier),
+        };
+    }, [selectedFood, selectedServing, quantity]);
+
     // Debounced nutrition search
     useEffect(() => {
-        if (!mealName || mealName.length < 2) {
+        if (!searchQuery || searchQuery.length < 2) {
             setSearchResults([]);
             setShowResults(false);
             return;
@@ -83,7 +99,7 @@ export default function MealEntryPage() {
         const timer = setTimeout(async () => {
             setIsSearching(true);
             try {
-                const res = await fetch(`/api/nutrition?q=${encodeURIComponent(mealName)}`, {
+                const res = await fetch(`/api/nutrition?q=${encodeURIComponent(searchQuery)}`, {
                     signal: controller.signal
                 });
                 if (res.ok) {
@@ -98,22 +114,31 @@ export default function MealEntryPage() {
             } finally {
                 setIsSearching(false);
             }
-        }, 300); // 300ms debounce
+        }, 300);
 
         return () => {
             clearTimeout(timer);
             controller.abort();
         };
-    }, [mealName]);
+    }, [searchQuery]);
 
     const selectFood = (food: NutritionResult) => {
-        setMealName(food.name);
-        setCalories(food.calories.toString());
-        setProtein(food.protein.toString());
-        setCarbs(food.carbs.toString());
-        setFat(food.fat.toString());
+        setSelectedFood(food);
+        setSearchQuery(food.name);
         setShowResults(false);
-        showNotification('NUTRITION DATA LOADED', 'info');
+
+        // Set default serving option (prefer 100g or first option)
+        const defaultServing = food.servingOptions.find(o => o.label === '100 g')
+            || food.servingOptions[0];
+        setSelectedServing(defaultServing);
+        setQuantity('1');
+
+        showNotification('FOOD SELECTED - ADJUST SERVING', 'info');
+    };
+
+    const selectServing = (option: ServingOption) => {
+        setSelectedServing(option);
+        setShowServingDropdown(false);
     };
 
     const showNotification = (message: string, type: 'success' | 'info' | 'warning' = 'success') => {
@@ -127,28 +152,24 @@ export default function MealEntryPage() {
     };
 
     const handleSubmit = async () => {
-        if (!calories) return;
+        if (!selectedFood || !selectedServing || calculatedNutrition.calories === 0) return;
 
         setIsPending(true);
-        const calorieValue = parseInt(calories) || 0;
-        const xpGain = Math.floor(calorieValue / 20) + 10;
+        const xpGain = Math.floor(calculatedNutrition.calories / 20) + 10;
 
         try {
-            // Save to Supabase
             await saveMeal({
-                name: mealName || mealType.charAt(0).toUpperCase() + mealType.slice(1),
-                calories: calorieValue,
-                protein: parseInt(protein) || 0,
-                carbs: parseInt(carbs) || 0,
-                fat: parseInt(fat) || 0,
+                name: selectedFood.name,
+                calories: calculatedNutrition.calories,
+                protein: calculatedNutrition.protein,
+                carbs: calculatedNutrition.carbs,
+                fat: calculatedNutrition.fat,
                 meal_type: mealType as 'breakfast' | 'lunch' | 'dinner' | 'snack',
             });
 
-            // Show Feedback
             showXPGain(xpGain);
             showNotification(`${mealType.toUpperCase()} LOGGED SUCCESSFULLY`, 'success');
 
-            // Return to dashboard after short delay
             setTimeout(() => {
                 router.push('/dashboard/food');
             }, 1500);
@@ -159,9 +180,16 @@ export default function MealEntryPage() {
         }
     };
 
+    const clearSelection = () => {
+        setSelectedFood(null);
+        setSearchQuery('');
+        setSelectedServing(null);
+        setQuantity('1');
+    };
+
     if (!mounted) return null;
 
-    const MealIcon = MEAL_ICONS[mealType] || Plus;
+    const MealIcon = MEAL_ICONS[mealType] || Coffee;
 
     return (
         <SoloLevelingPage>
@@ -194,7 +222,7 @@ export default function MealEntryPage() {
                 }
             >
                 <div className="space-y-6 mt-4">
-                    {/* Search Input with Autocomplete */}
+                    {/* Search Input */}
                     <div className="relative">
                         <label className="text-white text-xs tracking-[0.2em] uppercase mb-3 block font-bold text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]">
                             SEARCH FOOD
@@ -202,10 +230,13 @@ export default function MealEntryPage() {
                         <div className="relative">
                             <input
                                 type="text"
-                                value={mealName}
-                                onChange={(e) => setMealName(e.target.value)}
+                                value={searchQuery}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    if (selectedFood) clearSelection();
+                                }}
                                 onFocus={() => searchResults.length > 0 && setShowResults(true)}
-                                placeholder="Type to search (e.g. grilled chicken)"
+                                placeholder="Type to search (e.g. ribeye steak)"
                                 autoFocus
                                 className="w-full bg-black/40 border border-white/20 text-white px-6 py-4 pr-12 placeholder-white/30 
                                     focus:border-cyan-400 focus:outline-none focus:shadow-[0_0_20px_rgba(34,211,238,0.2)] transition-all
@@ -222,8 +253,8 @@ export default function MealEntryPage() {
 
                         {/* Search Results Dropdown */}
                         {showResults && searchResults.length > 0 && (
-                            <div className="absolute z-50 w-full mt-1 bg-black/95 border border-cyan-400/50 max-h-48 overflow-y-auto">
-                                {searchResults.slice(0, 5).map((food, idx) => (
+                            <div className="absolute z-50 w-full mt-1 bg-black/95 border border-cyan-400/50 max-h-60 overflow-y-auto">
+                                {searchResults.map((food, idx) => (
                                     <button
                                         key={food.fdcId || idx}
                                         onClick={() => selectFood(food)}
@@ -231,7 +262,7 @@ export default function MealEntryPage() {
                                     >
                                         <div className="text-white text-sm truncate">{food.name}</div>
                                         <div className="text-white/50 text-xs mt-1">
-                                            {food.calories} cal • {food.protein}g P • {food.carbs}g C • {food.fat}g F
+                                            {Math.round(food.calories)} cal/100g • {food.servingOptions.length} serving options
                                         </div>
                                     </button>
                                 ))}
@@ -239,66 +270,124 @@ export default function MealEntryPage() {
                         )}
                     </div>
 
-                    {/* Macro Display */}
-                    <div className="grid grid-cols-4 gap-3">
-                        <div className="text-center">
-                            <label className="text-orange-400 text-[10px] tracking-wider uppercase block mb-2 font-bold">CAL</label>
-                            <input
-                                type="number"
-                                value={calories}
-                                onChange={(e) => setCalories(e.target.value)}
-                                placeholder="0"
-                                className="w-full bg-black/40 border border-orange-400/50 text-white text-center text-2xl font-bold px-2 py-3
-                                    focus:border-orange-400 focus:outline-none transition-all"
-                            />
-                        </div>
-                        <div className="text-center">
-                            <label className="text-red-400 text-[10px] tracking-wider uppercase block mb-2 font-bold">PRO</label>
-                            <input
-                                type="number"
-                                value={protein}
-                                onChange={(e) => setProtein(e.target.value)}
-                                placeholder="0"
-                                className="w-full bg-black/40 border border-red-400/50 text-white text-center text-2xl px-2 py-3
-                                    focus:border-red-400 focus:outline-none transition-all"
-                            />
-                        </div>
-                        <div className="text-center">
-                            <label className="text-yellow-400 text-[10px] tracking-wider uppercase block mb-2 font-bold">CARB</label>
-                            <input
-                                type="number"
-                                value={carbs}
-                                onChange={(e) => setCarbs(e.target.value)}
-                                placeholder="0"
-                                className="w-full bg-black/40 border border-yellow-400/50 text-white text-center text-2xl px-2 py-3
-                                    focus:border-yellow-400 focus:outline-none transition-all"
-                            />
-                        </div>
-                        <div className="text-center">
-                            <label className="text-blue-400 text-[10px] tracking-wider uppercase block mb-2 font-bold">FAT</label>
-                            <input
-                                type="number"
-                                value={fat}
-                                onChange={(e) => setFat(e.target.value)}
-                                placeholder="0"
-                                className="w-full bg-black/40 border border-blue-400/50 text-white text-center text-2xl px-2 py-3
-                                    focus:border-blue-400 focus:outline-none transition-all"
-                            />
-                        </div>
-                    </div>
+                    {/* Selected Food Card */}
+                    {selectedFood && (
+                        <div className="border border-cyan-400/30 bg-cyan-400/5 p-4 space-y-4">
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <div className="text-cyan-400 text-xs tracking-widest uppercase mb-1">SELECTED</div>
+                                    <div className="text-white font-medium">{selectedFood.name}</div>
+                                    {selectedFood.brandName && (
+                                        <div className="text-white/50 text-xs mt-1">{selectedFood.brandName}</div>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={clearSelection}
+                                    className="text-white/40 hover:text-white text-xs"
+                                >
+                                    CHANGE
+                                </button>
+                            </div>
 
-                    <p className="text-center text-white/40 text-xs">
-                        Search auto-fills nutrition • Edit values if needed
-                    </p>
+                            {/* Quantity + Serving Selector */}
+                            <div className="grid grid-cols-2 gap-4">
+                                {/* Quantity Input */}
+                                <div>
+                                    <label className="text-white/60 text-[10px] tracking-wider uppercase block mb-2">
+                                        QUANTITY
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="0.25"
+                                        min="0.25"
+                                        value={quantity}
+                                        onChange={(e) => setQuantity(e.target.value)}
+                                        className="w-full bg-black/60 border border-white/30 text-white text-center text-2xl font-bold px-4 py-3
+                                            focus:border-cyan-400 focus:outline-none transition-all"
+                                    />
+                                </div>
+
+                                {/* Serving Dropdown */}
+                                <div className="relative">
+                                    <label className="text-white/60 text-[10px] tracking-wider uppercase block mb-2">
+                                        SERVING SIZE
+                                    </label>
+                                    <button
+                                        onClick={() => setShowServingDropdown(!showServingDropdown)}
+                                        className="w-full bg-black/60 border border-white/30 text-white px-4 py-3 text-left
+                                            focus:border-cyan-400 focus:outline-none transition-all flex items-center justify-between"
+                                    >
+                                        <span className="truncate text-lg">
+                                            {selectedServing?.label || 'Select...'}
+                                        </span>
+                                        <ChevronDown className={`w-5 h-5 text-white/60 transition-transform ${showServingDropdown ? 'rotate-180' : ''}`} />
+                                    </button>
+
+                                    {showServingDropdown && (
+                                        <div className="absolute z-50 w-full mt-1 bg-black/95 border border-cyan-400/50 max-h-48 overflow-y-auto">
+                                            {selectedFood.servingOptions.map((option, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => selectServing(option)}
+                                                    className="w-full px-4 py-3 text-left hover:bg-cyan-400/20 border-b border-white/10 last:border-0 transition-colors flex items-center justify-between"
+                                                >
+                                                    <span className="text-white">{option.label}</span>
+                                                    {selectedServing?.label === option.label && (
+                                                        <Check className="w-4 h-4 text-cyan-400" />
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Calculated Macros Display */}
+                    {selectedFood && selectedServing && (
+                        <div className="border border-white/10 bg-black/30 p-4">
+                            <div className="text-center text-white/40 text-xs tracking-wider mb-3">
+                                NUTRITION FOR {quantity} × {selectedServing.label}
+                            </div>
+                            <div className="grid grid-cols-4 gap-3">
+                                <div className="text-center">
+                                    <div className="text-orange-400 text-3xl font-bold">{calculatedNutrition.calories}</div>
+                                    <div className="text-orange-400/60 text-[10px] tracking-wider uppercase mt-1">CAL</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-red-400 text-3xl font-bold">{calculatedNutrition.protein}g</div>
+                                    <div className="text-red-400/60 text-[10px] tracking-wider uppercase mt-1">PROTEIN</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-yellow-400 text-3xl font-bold">{calculatedNutrition.carbs}g</div>
+                                    <div className="text-yellow-400/60 text-[10px] tracking-wider uppercase mt-1">CARBS</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-blue-400 text-3xl font-bold">{calculatedNutrition.fat}g</div>
+                                    <div className="text-blue-400/60 text-[10px] tracking-wider uppercase mt-1">FAT</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Helper text */}
+                    {!selectedFood && (
+                        <p className="text-center text-white/40 text-xs">
+                            Search for a food to get started
+                        </p>
+                    )}
 
                     {/* Submit Button */}
                     <div className="pt-4">
                         <SystemButton
                             onClick={handleSubmit}
-                            disabled={isPending || !calories}
-                            className={!calories ? "opacity-50 grayscale" : "border-cyan-400 text-cyan-400"}
+                            disabled={isPending || !selectedFood || !selectedServing || calculatedNutrition.calories === 0}
+                            className={(!selectedFood || calculatedNutrition.calories === 0)
+                                ? "opacity-50 grayscale"
+                                : "border-cyan-400 text-cyan-400"}
                         >
-                            {isPending ? 'SAVING...' : 'LOG ENTRY'}
+                            {isPending ? 'SAVING...' : `LOG ${calculatedNutrition.calories} CALORIES`}
                         </SystemButton>
                     </div>
                 </div>
